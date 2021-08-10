@@ -63,8 +63,8 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
     @CommandLine.Option(names = "--output", description = "Path to output population", required = true)
     private Path output;
 
-    @CommandLine.Option(names = "--boundary-links", description = "Path to boundary links for cross-broader traffic", required = false)
-    private Path pathToBoundaryLinks;
+    @CommandLine.Option(names = "--with-international-trips", description = "Path to boundary links for cross-broader traffic", required = false)
+    private boolean withInternationalTrips;
 
     @CommandLine.Mixin
     private LanduseOptions landuse = new LanduseOptions();
@@ -97,7 +97,6 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
         }
 
         double adjustedTrucksLoad = averageTruckLoad * (1 / sample) * workingDays; // 1 year = x working days
-
         // Load config, scenario and network
         Config config = ConfigUtils.createConfig();
         config.global().setCoordinateSystem(crs.getInputCRS());
@@ -168,19 +167,46 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
 
         MutableInt totalGeneratedPerson = new MutableInt();
 
-        // Analyze cross broader trips
-        boolean includeInternationalTrips = false;
-        List<Id<Link>> boundaryLinkIds = new ArrayList<>();
-        if (pathToBoundaryLinks != null) {
-            includeInternationalTrips = true;
-            try (BufferedReader csvReader = Files.newBufferedReader(pathToBoundaryLinks)){
-                String[] linksIdStrings = csvReader.readLine().split(",");
-                for (String linkIdString : linksIdStrings) {
-                    boundaryLinkIds.add(Id.createLinkId(linkIdString));
+        // Prepare the data base cross broader trips
+        Map<String, String> internationalTerminalMap = new HashMap<>();  // Terminal ID - Terminal orientation
+        Map<String, List<Id<Link>>> boundaryLinksMap = new HashMap<>(); // Orientation - List of link IDs
+        if (withInternationalTrips) {
+            Path pathToBoundaryLinks = rawDataDirectory.resolve("boundary-links.csv");
+            Path pathToInternationalTerminals = rawDataDirectory.resolve("international-terminals.csv");
+            if (!Files.exists(pathToInternationalTerminals)) {
+                log.error("Required international terminal data {} not found", pathToInternationalTerminals);
+            }
+            if (!Files.exists(pathToBoundaryLinks)) {
+                log.error("Required boundary link data {} not found", pathToBoundaryLinks);
+            }
+
+            try (BufferedReader csvReader = Files.newBufferedReader(pathToBoundaryLinks)) {
+                csvReader.readLine(); // skip title line
+                while (true) {
+                    String line = csvReader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    String[] boundaryLinkData = line.split(",");
+                    List<Id<Link>> updatedList = boundaryLinksMap.getOrDefault(boundaryLinkData[1], new ArrayList<>());
+                    updatedList.add(Id.createLinkId(boundaryLinkData[0]));
+                    boundaryLinksMap.put(boundaryLinkData[1], updatedList);
+                }
+            }
+            try (BufferedReader csvReader = Files.newBufferedReader(pathToInternationalTerminals)) {
+                csvReader.readLine(); // skip title line
+                while (true) {
+                    String terminalLine = csvReader.readLine();
+                    if (terminalLine == null) {
+                        break;
+                    }
+                    String[] terminalInfo = terminalLine.split(",");
+                    internationalTerminalMap.put(terminalInfo[1], terminalInfo[3]);
                 }
             }
         }
 
+        // Begin analysis
         try (CSVParser parser = new CSVParser(Files.newBufferedReader(freightDataPath, StandardCharsets.ISO_8859_1),
                 CSVFormat.DEFAULT.withDelimiter(';').withFirstRecordAsHeader())) {
 
@@ -199,6 +225,8 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                 String originHL = record.get(2);
                 String destinationHL = record.get(3);
                 String tonHL = record.get(16);
+                String orignTerminal = record.get(4);
+                String destinationTerminal = record.get(5);
 
                 // Nachlauf
                 String modeNL = record.get(8);
@@ -207,7 +235,7 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
 
                 String tonNL = record.get(17);
 
-                if ((relevantRegionIds.contains(originVL) && relevantRegionIds.contains(destinationVL)) || includeInternationalTrips) {
+                if ((relevantRegionIds.contains(originVL) && relevantRegionIds.contains(destinationVL))) {
                     if (modeVL.equals("2") && !tonVL.equals("0")) {
                         double trucks = Double.parseDouble(tonVL) / adjustedTrucksLoad;
                         int numOfTrucks = 0;
@@ -218,12 +246,10 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                         } else {
                             numOfTrucks = (int) (Math.floor(trucks) + 1);
                         }
-                        List<Id<Link>> linksInOrigin = regionLinksMap.
-                                getOrDefault(lookUpTableCore.get(originVL), boundaryLinkIds);
+                        List<Id<Link>> linksInOrigin = regionLinksMap.get(lookUpTableCore.get(originVL));
                         Id<Link> fromLinkId = linksInOrigin.get(rnd.nextInt(linksInOrigin.size()));
 
-                        List<Id<Link>> linksInDestination = regionLinksMap.
-                                getOrDefault(lookUpTableCore.get(destinationVL), boundaryLinkIds);
+                        List<Id<Link>> linksInDestination = regionLinksMap.get(lookUpTableCore.get(destinationVL));
                         Id<Link> toLinkId = linksInDestination.get(rnd.nextInt(linksInDestination.size()));
 
                         generateFreightPlan(network, fromLinkId, toLinkId, numOfTrucks, goodType, population,
@@ -231,7 +257,7 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                     }
                 }
 
-                if ((relevantRegionIds.contains(originHL) && relevantRegionIds.contains(destinationHL)) || includeInternationalTrips) {
+                if ((relevantRegionIds.contains(originHL) && relevantRegionIds.contains(destinationHL)) || withInternationalTrips) {
                     if (modeHL.equals("2") && !tonHL.equals("0")) {
                         double trucks = Double.parseDouble(tonHL) / adjustedTrucksLoad;
                         int numOfTrucks = 0;
@@ -242,12 +268,17 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                         } else {
                             numOfTrucks = (int) (Math.floor(trucks) + 1);
                         }
-                        List<Id<Link>> linksInOrigin = regionLinksMap.
-                                getOrDefault(lookUpTableCore.get(originHL), boundaryLinkIds);
+
+                        List<Id<Link>> linksInOrigin = regionLinksMap.getOrDefault(lookUpTableCore.get(originHL), null);
+                        if (linksInOrigin == null){
+                            linksInOrigin = boundaryLinksMap.get(internationalTerminalMap.get(orignTerminal));
+                        }
                         Id<Link> fromLinkId = linksInOrigin.get(rnd.nextInt(linksInOrigin.size()));
 
-                        List<Id<Link>> linksInDestination = regionLinksMap.
-                                getOrDefault(lookUpTableCore.get(destinationHL), boundaryLinkIds);
+                        List<Id<Link>> linksInDestination = regionLinksMap.getOrDefault(lookUpTableCore.get(destinationHL), null);
+                        if (linksInDestination == null){
+                            linksInDestination = boundaryLinksMap.get(internationalTerminalMap.get(destinationTerminal));
+                        }
                         Id<Link> toLinkId = linksInDestination.get(rnd.nextInt(linksInDestination.size()));
 
                         generateFreightPlan(network, fromLinkId, toLinkId, numOfTrucks, goodType, population,
@@ -255,7 +286,7 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                     }
                 }
 
-                if ((relevantRegionIds.contains(originNL) && relevantRegionIds.contains(destinationNL)) || includeInternationalTrips) {
+                if ((relevantRegionIds.contains(originNL) && relevantRegionIds.contains(destinationNL))) {
                     if (modeNL.equals("2") && !tonNL.equals("0")) {
                         double trucks = Double.parseDouble(tonNL) / adjustedTrucksLoad;
                         int numOfTrucks = 0;
@@ -266,12 +297,10 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                         } else {
                             numOfTrucks = (int) (Math.floor(trucks) + 1);
                         }
-                        List<Id<Link>> linksInOrigin = regionLinksMap.
-                                getOrDefault(lookUpTableCore.get(originNL), boundaryLinkIds);
+                        List<Id<Link>> linksInOrigin = regionLinksMap.get(lookUpTableCore.get(originNL));
                         Id<Link> fromLinkId = linksInOrigin.get(rnd.nextInt(linksInOrigin.size()));
 
-                        List<Id<Link>> linksInDestination = regionLinksMap.
-                                getOrDefault(lookUpTableCore.get(destinationNL), boundaryLinkIds);
+                        List<Id<Link>> linksInDestination = regionLinksMap.get(lookUpTableCore.get(destinationNL));
                         Id<Link> toLinkId = linksInDestination.get(rnd.nextInt(linksInDestination.size()));
 
                         generateFreightPlan(network, fromLinkId, toLinkId, numOfTrucks, goodType, population,
