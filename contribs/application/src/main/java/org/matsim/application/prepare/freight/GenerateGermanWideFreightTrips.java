@@ -194,7 +194,6 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                     List<Id<Link>> updatedList = boundaryLinksMap.getOrDefault(boundaryLinkData[1], new ArrayList<>());
                     updatedList.add(Id.createLinkId(boundaryLinkData[0]));
                     boundaryLinksMap.put(boundaryLinkData[1], updatedList);
-
                     boundaryLinks.add(Id.createLinkId(boundaryLinkData[0]));
                 }
             }
@@ -208,9 +207,9 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                     String[] regionInfo = regionLine.split(";");
                     String[] orientations = new String[]{"N", "NW", "W", "SW", "S", "SE", "E", "NE"};
                     int x = rnd.nextInt(8);
-                    if (regionInfo.length < 3){
+                    if (regionInfo.length < 3) {
                         internationalRegionsMap.put(regionInfo[0], orientations[x]);
-                    } else if (!Arrays.asList(orientations).contains(regionInfo[2])){
+                    } else if (!Arrays.asList(orientations).contains(regionInfo[2])) {
                         internationalRegionsMap.put(regionInfo[0], orientations[x]);
                     } else {
                         internationalRegionsMap.put(regionInfo[0], regionInfo[2]);
@@ -281,9 +280,9 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                         }
 
                         List<Id<Link>> linksInOrigin = regionLinksMap.get(lookUpTableCore.get(originHL));
-                        if (linksInOrigin == null){
+                        if (linksInOrigin == null) {
                             linksInOrigin = boundaryLinksMap.get(internationalRegionsMap.get(originHL));
-                            if (linksInOrigin == null){
+                            if (linksInOrigin == null) {
                                 linksInOrigin = boundaryLinks; // There may be some typo in the database...
                                 log.info("Region " + originHL + " is not in the database!");
                             }
@@ -291,9 +290,9 @@ public class GenerateGermanWideFreightTrips implements MATSimAppCommand {
                         Id<Link> fromLinkId = linksInOrigin.get(rnd.nextInt(linksInOrigin.size()));
 
                         List<Id<Link>> linksInDestination = regionLinksMap.get(lookUpTableCore.get(destinationHL));
-                        if (linksInDestination == null){
+                        if (linksInDestination == null) {
                             linksInDestination = boundaryLinksMap.get(internationalRegionsMap.get(destinationHL));
-                            if (linksInDestination == null){
+                            if (linksInDestination == null) {
                                 linksInDestination = boundaryLinks; // There may be some typo in the database...
                                 log.info("Region " + destinationHL + " is not in the database!");
                             }
