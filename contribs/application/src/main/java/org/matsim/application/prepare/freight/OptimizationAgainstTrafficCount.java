@@ -13,6 +13,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.costcalculators.RandomizingTimeDistanceTravelDisutilityFactory;
 import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
@@ -24,12 +25,17 @@ import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class OptimizationAgainstTrafficCount {
     private static final String ROOT_FOLDER = "/Users/luchengqi/Documents/SVN/shared-svn/projects/german-wide-freight/original-data/"; //TODO
@@ -40,6 +46,8 @@ public class OptimizationAgainstTrafficCount {
     private static final String BOUNDARY_LINKS = ROOT_FOLDER + "boundary-links.csv";
     private static final String COUNTING_DATA_PATH = ROOT_FOLDER + "countData.csv";
     private static final String FREIGHT_DATA_PATH = ROOT_FOLDER + "freight-data.csv";
+    private static final String INITIAL_TRAFFIC_COUNT_PATH = ROOT_FOLDER + "initial-traffic-count.csv";
+    private static final String OUTPUT_PATH = "/Users/luchengqi/Documents/SVN/shared-svn/projects/german-wide-freight/v1.3/optimized-freight-data.csv";
 
     public static void main(String[] args) throws IOException {
         // Load config, scenario and network
@@ -64,16 +72,21 @@ public class OptimizationAgainstTrafficCount {
         // Read Freight Data
         Map<String, Map<String, Double>> freightTraffic = readFreightTraffic(FREIGHT_DATA_PATH, 7.0);
 
-        // Optimization
-        System.out.println("Begin optimization process");
-        Map<Id<Link>, Double> actualCount = calculateActualCount(freightTraffic, trafficCountReference.keySet(),
+        // Calculate initial actual traffic count
+        Set<Id<Link>> trafficCountStations = trafficCountReference.keySet();
+        Map<Id<Link>, Double> actualCount = calculateInitialTrafficCount(freightTraffic, trafficCountStations,
                 router, network, zoneIdToLinkIdMap);
-
         double score = calculateScore(actualCount, trafficCountReference);
         System.out.println("Initial score is " + score);
 
-        // Write results
+        // Optimization
+        System.out.println("Begin optimization process");
+        // TODO Add the optimization script here
+        // Since this script is already very long, you can consider write something in a separate file
 
+
+        // Write results
+        writeResults(freightTraffic);
     }
 
 
@@ -84,15 +97,15 @@ public class OptimizationAgainstTrafficCount {
     (Map<String, Map<String, Double>> freightTraffic, Set<Id<Link>> countingStations, LeastCostPathCalculator router,
      Network network, Map<String, Id<Link>> zoneIdToLinkIdMap) {
         // Initialization
-        Map<Id<Link>, Double> actualCount = new HashMap<>();
+        Map<Id<Link>, Double> actualCount = new ConcurrentHashMap<>();
         for (Id<Link> linkId : countingStations) {
             actualCount.put(linkId, 0.0);
         }
         // Calculate actual traffic count
-        int processed = 0;
-        System.out.println("Calculating initial actual counting data...");
-        for (String from : freightTraffic.keySet()) {
-            for (String to : freightTraffic.get(from).keySet()) {
+        AtomicInteger processed = new AtomicInteger(0);
+        System.out.println("Calculating initial actual counting data...This may take some time...");
+        freightTraffic.keySet().stream().forEach(from -> {
+            freightTraffic.get(from).keySet().stream().forEach(to -> {
                 double numOfVehicles = freightTraffic.get(from).get(to);
                 Node fromNode = network.getLinks().get(zoneIdToLinkIdMap.get(from)).getToNode();
                 Node toNode = network.getLinks().get(zoneIdToLinkIdMap.get(to)).getToNode();
@@ -104,12 +117,11 @@ public class OptimizationAgainstTrafficCount {
                         actualCount.put(link.getId(), updatedValue);
                     }
                 }
-                processed += 1;
-                if (processed % 10000 == 0) {
+                if (processed.incrementAndGet() % 10000 == 0) {
                     System.out.println("In progress: " + processed);
                 }
-            }
-        }
+            });
+        });
         return actualCount;
     }
 
@@ -119,6 +131,29 @@ public class OptimizationAgainstTrafficCount {
             score += Math.pow(actualCount.get(linkId) - trafficCountReference.get(linkId), 2);
         }
         return score;
+    }
+
+
+    private static String[] chooseRandomDimension(Map<String, Map<String, Double>> freightTraffic, Random random) {
+        String from = null;
+        String to = null;
+        int fromIdx = random.nextInt(freightTraffic.size());
+        int i = 0;
+        for (String fromRegion : freightTraffic.keySet()) {
+            if (i == fromIdx) {
+                from = fromRegion;
+                int toIdx = random.nextInt(freightTraffic.get(from).size());
+                int j = 0;
+                for (String toRegion : freightTraffic.get(from).keySet()) {
+                    if (j == toIdx) {
+                        to = toRegion;
+                    }
+                    j += 1;
+                }
+            }
+            i += 1;
+        }
+        return new String[]{from, to};
     }
 
     //##################################################################################################################
@@ -179,7 +214,7 @@ public class OptimizationAgainstTrafficCount {
             (Map<String, Id<Link>> zoneIdToLinkIdMap, String internationalRegionPath, String boudaryLinksPath) throws IOException {
         System.out.println("Adding International regions to the map...");
         // Preparation
-        Random rnd = new Random(1234);
+        Random rnd = new Random(1234);  // Keep this random independent! We need to use repeat this sequence in other script
         String[] orientations = new String[]{"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
 
         // Read boundary links
@@ -254,5 +289,63 @@ public class OptimizationAgainstTrafficCount {
             }
         }
         return freightTraffic;
+    }
+
+    private static void writeResults(Map<String, Map<String, Double>> freightTraffic) throws IOException {
+        FileWriter csvWriter = new FileWriter(OUTPUT_PATH);
+        csvWriter.append("from");
+        csvWriter.append(",");
+        csvWriter.append("to");
+        csvWriter.append(",");
+        csvWriter.append("number-of-truck");
+        csvWriter.append("\n");
+
+        for (String from : freightTraffic.keySet()) {
+            for (String to : freightTraffic.get(from).keySet()) {
+                csvWriter.append(from);
+                csvWriter.append(",");
+                csvWriter.append(to);
+                csvWriter.append(",");
+                csvWriter.append(Double.toString(freightTraffic.get(from).get(to)));
+                csvWriter.append("\n");
+
+            }
+        }
+        csvWriter.close();
+    }
+
+    private static Map<Id<Link>, Double> calculateInitialTrafficCount
+            (Map<String, Map<String, Double>> freightTraffic, Set<Id<Link>> countingStations,
+             LeastCostPathCalculator router, Network network, Map<String, Id<Link>> zoneIdToLinkIdMap) throws IOException {
+
+        Map<Id<Link>, Double> actualCount = new HashMap<>();
+        // Read initial traffic count (if there is a csv file)
+        File file = new File(INITIAL_TRAFFIC_COUNT_PATH);
+        if (file.exists()) {
+            try (CSVParser parser = new CSVParser(Files.newBufferedReader(Path.of(INITIAL_TRAFFIC_COUNT_PATH)),
+                    CSVFormat.DEFAULT.withDelimiter(',').withFirstRecordAsHeader())) {
+                System.out.println("Initial traffic count found! Reading the csv file...");
+                for (CSVRecord record : parser) {
+                    actualCount.put(Id.createLinkId(record.get(0)), Double.parseDouble(record.get(1)));
+                }
+            }
+        } else {
+            // Otherwise, calculate the initial traffic count and write it as a csv file
+            System.out.println("Initial traffic count is not found.");
+            actualCount = calculateActualCount(freightTraffic, countingStations, router, network, zoneIdToLinkIdMap);
+            FileWriter csvWriter = new FileWriter(INITIAL_TRAFFIC_COUNT_PATH);
+            csvWriter.append("counting-station-link");
+            csvWriter.append(",");
+            csvWriter.append("count");
+            csvWriter.append("\n");
+            for (Id<Link> linkId : actualCount.keySet()) {
+                csvWriter.append(linkId.toString());
+                csvWriter.append(",");
+                csvWriter.append(Double.toString(actualCount.get(linkId)));
+                csvWriter.append("\n");
+            }
+            csvWriter.close();
+        }
+        return actualCount;
     }
 }
