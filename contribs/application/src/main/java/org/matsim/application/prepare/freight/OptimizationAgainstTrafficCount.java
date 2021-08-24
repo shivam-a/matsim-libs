@@ -81,9 +81,25 @@ public class OptimizationAgainstTrafficCount {
 
         // Optimization
         System.out.println("Begin optimization process");
-        // TODO Add the optimization script here
-        // Since this script is already very long, you can consider write something in a separate file
+        Random random = new Random(5678);
+        int iterations = 0;
+        int maxInteration = 1000;
+        while (iterations < maxInteration) {
+            String[] fromToPair = chooseRandomDimension(freightTraffic, random);
+            double originalNumOfVehicles = freightTraffic.get(fromToPair[0]).get(fromToPair[1]);
+            Node fromNode = network.getLinks().get(zoneIdToLinkIdMap.get(fromToPair[0])).getToNode();
+            Node toNode = network.getLinks().get(zoneIdToLinkIdMap.get(fromToPair[1])).getToNode();
+            List<Id<Link>> affectedLinks = new ArrayList<>
+                    (router.calcLeastCostPath(fromNode, toNode, 0, null, null).links.
+                            stream().map(l->l.getId()).
+                            collect(Collectors.toList()));
+            affectedLinks.retainAll(trafficCountStations);
 
+            Map<Id<Link>, Double> temporaryActualCount = new HashMap<>(actualCount);
+
+
+            iterations += 1;
+        }
 
         // Write results
         writeResults(freightTraffic);
