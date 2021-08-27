@@ -93,9 +93,9 @@ public class OptimizationAgainstTrafficCount {
         }
         int size = odPairs.size();
 
-        for (int round = 0; round < 2; round++) {
+        for (int round = 0; round < 3; round++) {
             int printRound = round + 1;
-            System.out.println("Begin round " + printRound + " out of 2");
+            System.out.println("Begin round " + printRound + " out of 3");
 
             int iterations = 0;
             for (String[] fromToPair : odPairs) {
