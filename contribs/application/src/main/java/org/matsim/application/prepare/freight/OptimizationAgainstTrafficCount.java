@@ -48,6 +48,7 @@ public class OptimizationAgainstTrafficCount {
     private static final String FREIGHT_DATA_PATH = ROOT_FOLDER + "freight-data.csv";
     private static final String INITIAL_TRAFFIC_COUNT_PATH = ROOT_FOLDER + "initial-traffic-count.csv";
     private static final String OUTPUT_PATH = "/Users/luchengqi/Documents/SVN/shared-svn/projects/german-wide-freight/v1.3/optimized-freight-data.csv";
+    private static final double BOUND = 15; // in percentage value
 
     public static void main(String[] args) throws IOException {
         // Load config, scenario and network
@@ -76,31 +77,79 @@ public class OptimizationAgainstTrafficCount {
         Set<Id<Link>> trafficCountStations = trafficCountReference.keySet();
         Map<Id<Link>, Double> actualCount = calculateInitialTrafficCount(freightTraffic, trafficCountStations,
                 router, network, zoneIdToLinkIdMap);
-        double score = calculateScore(actualCount, trafficCountReference);
-        System.out.println("Initial score is " + score);
+        double initialScore = calculateScore(actualCount, trafficCountReference);
+        System.out.println("Initial score is " + initialScore);
 
         // Optimization
         System.out.println("Begin optimization process");
-        Random random = new Random(5678);
-        int iterations = 0;
-        int maxInteration = 1000;
-        while (iterations < maxInteration) {
-            String[] fromToPair = chooseRandomDimension(freightTraffic, random);
-            double originalNumOfVehicles = freightTraffic.get(fromToPair[0]).get(fromToPair[1]);
-            Node fromNode = network.getLinks().get(zoneIdToLinkIdMap.get(fromToPair[0])).getToNode();
-            Node toNode = network.getLinks().get(zoneIdToLinkIdMap.get(fromToPair[1])).getToNode();
-            List<Id<Link>> affectedLinks = new ArrayList<>
-                    (router.calcLeastCostPath(fromNode, toNode, 0, null, null).links.
-                            stream().map(l->l.getId()).
-                            collect(Collectors.toList()));
-            affectedLinks.retainAll(trafficCountStations);
-
-            Map<Id<Link>, Double> temporaryActualCount = new HashMap<>(actualCount);
-
-
-            iterations += 1;
+        double numOfTripsChanged = 0;
+        double score = initialScore;
+        List<String[]> odPairs = new ArrayList<>();
+        for (String from : freightTraffic.keySet()) {
+            for (String to : freightTraffic.get(from).keySet()) {
+                String[] odPair = new String[]{from, to};
+                odPairs.add(odPair);
+            }
         }
+        int size = odPairs.size();
 
+        for (int round = 0; round < 2; round++) {
+            int printRound = round + 1;
+            System.out.println("Begin round " + printRound + " out of 2");
+
+            int iterations = 0;
+            for (String[] fromToPair : odPairs) {
+                iterations += 1;
+                if (iterations % 5000 == 0) {
+                    System.out.println("Optimization in progress: " + 100 * iterations / size + "%" +
+                            ". Score = " + score + ". Number of trips changed = " + numOfTripsChanged);
+                }
+//            String[] fromToPair = chooseRandomDimension(freightTraffic, random);
+                double originalNumOfVehicles = freightTraffic.get(fromToPair[0]).get(fromToPair[1]);
+                if (originalNumOfVehicles < 5) {
+                    continue; // For those OD pair, it does not make much difference
+                }
+                Node fromNode = network.getLinks().get(zoneIdToLinkIdMap.get(fromToPair[0])).getToNode();
+                Node toNode = network.getLinks().get(zoneIdToLinkIdMap.get(fromToPair[1])).getToNode();
+                List<Id<Link>> affectedLinks = new ArrayList<>
+                        (router.calcLeastCostPath(fromNode, toNode, 0, null, null).links.
+                                stream().map(l -> l.getId()).
+                                collect(Collectors.toList()));
+                affectedLinks.retainAll(trafficCountStations);
+                double optimalAlpha = 1.0;
+                double minScore = score;
+                double lowerBound = Math.max(BOUND * -1, -50);
+                double upperBound = BOUND + 1;
+                for (double i = lowerBound; i < upperBound; i++) {
+                    double alpha = 1 + i / 100;
+                    Map<Id<Link>, Double> temporaryActualCount = new HashMap<>(actualCount);
+                    for (Id<Link> affectedLink : affectedLinks) {
+                        double newValue = temporaryActualCount.get(affectedLink) + originalNumOfVehicles * (alpha - 1);
+                        temporaryActualCount.put(affectedLink, newValue);
+                    }
+                    double updatedScore = calculateScore(temporaryActualCount, trafficCountReference);
+                    if (updatedScore < minScore) {
+                        minScore = updatedScore;
+                        optimalAlpha = alpha;
+                    }
+                }
+                // update freight traffic, actual count and score based on optimal alpha
+                for (Id<Link> affectedLink : affectedLinks) {
+                    double updatedValue = actualCount.get(affectedLink) + originalNumOfVehicles * (optimalAlpha - 1);
+                    actualCount.put(affectedLink, updatedValue);
+                }
+                freightTraffic.get(fromToPair[0]).put(fromToPair[1], originalNumOfVehicles * optimalAlpha);
+                numOfTripsChanged += originalNumOfVehicles * (optimalAlpha - 1);
+                score = minScore;
+
+//                if (optimalAlpha != 1) {
+//                    System.out.println("Iteration #" + iterations + ": from " + fromToPair[0] + " to " + fromToPair[1] + ". Optimal alpha = " + optimalAlpha + " -> score = " + score);
+//                }
+            }
+            System.out.println("Optimization in progress: 100%");
+            System.out.println("Complete!");
+            System.out.println("Total number of trips changed: " + numOfTripsChanged);
+        }
         // Write results
         writeResults(freightTraffic);
     }
