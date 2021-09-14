@@ -141,10 +141,7 @@ public class OptimizationAgainstTrafficCount {
                 freightTraffic.get(fromToPair[0]).put(fromToPair[1], originalNumOfVehicles * optimalAlpha);
                 numOfTripsChanged += originalNumOfVehicles * (optimalAlpha - 1);
                 score = minScore;
-
-//                if (optimalAlpha != 1) {
-//                    System.out.println("Iteration #" + iterations + ": from " + fromToPair[0] + " to " + fromToPair[1] + ". Optimal alpha = " + optimalAlpha + " -> score = " + score);
-//                }
+                
             }
             System.out.println("Optimization in progress: 100%");
             System.out.println("Complete!");
