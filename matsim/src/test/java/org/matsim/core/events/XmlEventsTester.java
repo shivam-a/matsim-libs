@@ -28,6 +28,8 @@ import junit.framework.TestCase;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.algorithms.EventWriterXML;
+import org.matsim.core.events.handler.BasicEventHandler;
+import org.matsim.core.events.handler.EventHandler;
 import org.matsim.testcases.utils.EventsCollector;
 
 /**
@@ -58,6 +60,13 @@ public abstract class XmlEventsTester extends TestCase {
 		EventsCollector collector = new EventsCollector();
 		events.addHandler(collector);
 		events.initProcessing();
+
+		events.addHandler( new BasicEventHandler(){
+			@Override public void handleEvent( Event event ){
+				System.out.println( event );
+			}
+		} );
+
 		new MatsimEventsReader(events).readFile(eventsFile);
 		events.finishProcessing();
 

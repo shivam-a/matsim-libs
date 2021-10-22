@@ -63,6 +63,7 @@ import java.util.Stack;
 
 public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 
+	static public final String EVENTS = "events";
 	static public final String EVENT = "event";
 
 	private final EventsManager events;
@@ -88,6 +89,9 @@ public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 		// (In theory, the compiler should notice that it should not construct and throw away this object many times. kai, oct'21)
 
 		switch( name ){
+			case EVENTS:
+				// do nothing
+				break;
 			case EVENT:
 				startEvent( atts );
 				break;
@@ -220,7 +224,8 @@ public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 							HasFacilityId.ATTRIBUTE_FACILITY ), ActivityFacility.class ),
 					atts.getValue( ActivityStartEvent.ATTRIBUTE_ACTTYPE ),
 					coord );
-			this.events.processEvent( event ) ;
+//			this.events.processEvent( event ) ;
+			// this is done at endTag, to process the attributes.  kai, oct'21
 		} else if (PersonArrivalEvent.EVENT_TYPE.equals(eventType)) {
 			String legMode = atts.getValue(PersonArrivalEvent.ATTRIBUTE_LEGMODE);
 			String mode = legMode == null ? null : legMode.intern();
