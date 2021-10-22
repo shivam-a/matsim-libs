@@ -50,6 +50,9 @@ import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.utils.objectattributes.attributable.Attributable;
+import org.matsim.utils.objectattributes.attributable.AttributesXmlReaderDelegate;
+import org.matsim.utils.objectattributes.attributable.ObjectAttributable;
 import org.matsim.vehicles.Vehicle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -65,6 +68,11 @@ public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 	private final EventsManager events;
 	private final Map<String, MatsimEventsReader.CustomEventMapper> customEventMappers = new HashMap<>();
 
+	// TODO: infrastructure to configure converters
+	private final AttributesXmlReaderDelegate attributesReader = new AttributesXmlReaderDelegate();
+
+	private Event event = null;
+
 	public EventsReaderXMLv1(final EventsManager events) {
 		this.events = events;
 		this.setValidating(false);// events-files have no DTD, thus they cannot validate
@@ -76,8 +84,28 @@ public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 
 	@Override
 	public void startTag(final String name, final Attributes atts, final Stack<String> context) {
-		if (EVENT.equals(name)) {
-			startEvent(atts);
+		org.matsim.utils.objectattributes.attributable.Attributes currAttributes = null;
+		// (In theory, the compiler should notice that it should not construct and throw away this object many times. kai, oct'21)
+
+		switch( name ){
+			case EVENT:
+				startEvent( atts );
+				break;
+			case Attributable.ATTRIBUTES:
+				if ( this.event == null ) {
+					throw new RuntimeException("should not happen");
+				}
+				if ( ! (this.event instanceof ObjectAttributable ) ) {
+					throw new RuntimeException("should not happen");
+				}
+				currAttributes = ((ObjectAttributable) this.event).getObjectAttributes();
+
+				// deliberate fall-through!
+			case Attributable.ATTRIBUTE:
+				this.attributesReader.startTag( name, atts, context, currAttributes );
+				break;
+			default:
+				throw new IllegalStateException( "Unexpected value: " + name );
 		}
 	}
 
@@ -93,6 +121,11 @@ public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 
 	@Override
 	public void endTag(final String name, final String content, final Stack<String> context) {
+		// special execution path for events that have attributes:
+		if ( event != null ) {
+			this.events.processEvent( event );
+		}
+		event = null ;
 	}
 
 	private void startEvent(final Attributes atts) {
@@ -179,14 +212,15 @@ public final class EventsReaderXMLv1 extends MatsimXmlEventsParser {
 				double yy = Double.parseDouble( atts.getValue( Event.ATTRIBUTE_Y ) ) ;
 				coord = new Coord( xx, yy ) ;
 			}
-			this.events.processEvent(new ActivityStartEvent(
+			this.event = new ActivityStartEvent(
 					time,
-					Id.create(atts.getValue( HasPersonId.ATTRIBUTE_PERSON ), Person.class ),
-					Id.create(atts.getValue( HasLinkId.ATTRIBUTE_LINK ), Link.class ),
-					atts.getValue( HasFacilityId.ATTRIBUTE_FACILITY ) == null ? null : Id.create(atts.getValue(
+					Id.create( atts.getValue( HasPersonId.ATTRIBUTE_PERSON ), Person.class ),
+					Id.create( atts.getValue( HasLinkId.ATTRIBUTE_LINK ), Link.class ),
+					atts.getValue( HasFacilityId.ATTRIBUTE_FACILITY ) == null ? null : Id.create( atts.getValue(
 							HasFacilityId.ATTRIBUTE_FACILITY ), ActivityFacility.class ),
-					atts.getValue(ActivityStartEvent.ATTRIBUTE_ACTTYPE ),
-					coord ) ) ;
+					atts.getValue( ActivityStartEvent.ATTRIBUTE_ACTTYPE ),
+					coord );
+			this.events.processEvent( event ) ;
 		} else if (PersonArrivalEvent.EVENT_TYPE.equals(eventType)) {
 			String legMode = atts.getValue(PersonArrivalEvent.ATTRIBUTE_LEGMODE);
 			String mode = legMode == null ? null : legMode.intern();

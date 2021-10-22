@@ -24,16 +24,26 @@ import org.matsim.api.core.v01.events.Event;
 import org.matsim.core.events.handler.BasicEventHandler;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.core.utils.io.UncheckedIOException;
+import org.matsim.utils.objectattributes.AttributeConverter;
+import org.matsim.utils.objectattributes.attributable.AttributesXmlWriterDelegate;
+import org.matsim.utils.objectattributes.attributable.ObjectAttributable;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 public class EventWriterXML implements EventWriter, BasicEventHandler {
 	private final BufferedWriter out;
+
+	// TODO: infrastructure to inject converters
+	// yyyy: I am fairly sure that there is one central AttributeConverter that is injected.  I think we should be ok with one central
+	// AttributeConverter, even if this exposes converters that are meant for one namespace to some other namespace.  However, it still needs to
+	// be made sure that this is used here.  kai, oct'21
+	private final AttributesXmlWriterDelegate attributesWriter = new AttributesXmlWriterDelegate();
 
 	public EventWriterXML(final String outfilename) {
 		this.out = IOUtils.getBufferedWriter(outfilename);
@@ -87,6 +97,9 @@ public class EventWriterXML implements EventWriter, BasicEventHandler {
 				this.out.append(encodeAttributeValue(entry.getValue()));
 				this.out.append("\" ");
 			}
+			if ( event instanceof ObjectAttributable ) {
+				this.attributesWriter.writeAttributes("\t\t\t\t", out, ((ObjectAttributable) event).getObjectAttributes());
+			}
 			this.out.append(" />\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -126,6 +139,7 @@ public class EventWriterXML implements EventWriter, BasicEventHandler {
 			}
 		}
 		if (encode) {
+			// yyyy: there is XmlUtils, which maybe shou be re-used here.  kai, oct'21
 			StringBuilder bf = new StringBuilder(attributeValue.length() + 30);
 			for (int pos = 0; pos < len; pos++) {
 				char ch = attributeValue.charAt(pos);

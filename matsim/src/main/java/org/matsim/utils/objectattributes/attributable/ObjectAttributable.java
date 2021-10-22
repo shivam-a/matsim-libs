@@ -21,12 +21,14 @@
 
  package org.matsim.utils.objectattributes.attributable;
 
-/**
- * @author thibautd
- */
-public interface Attributable {
+import org.matsim.api.core.v01.events.Event;
 
-	String ATTRIBUTES = "attributes";
-	String ATTRIBUTE = "attribute";
-	Attributes getAttributes();
+/**
+ * Same as {@link Attributable} except that the method has a different name.  To avoid conflict with {@link Event#getAttributes()}.
+ *
+ * @author kainagel
+ */
+public interface ObjectAttributable{
+
+	Attributes getObjectAttributes();
 }

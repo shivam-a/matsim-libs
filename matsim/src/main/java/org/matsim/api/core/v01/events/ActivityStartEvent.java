@@ -29,8 +29,11 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.api.internal.HasPersonId;
 import org.matsim.facilities.ActivityFacility;
+import org.matsim.utils.objectattributes.attributable.Attributable;
+import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.utils.objectattributes.attributable.ObjectAttributable;
 
-public class ActivityStartEvent extends Event implements HasFacilityId, HasPersonId, HasLinkId, BasicLocation{
+public class ActivityStartEvent extends Event implements HasFacilityId, HasPersonId, HasLinkId, BasicLocation, ObjectAttributable {
 
 	public static final String EVENT_TYPE = "actstart";
 	public static final String ATTRIBUTE_ACTTYPE = "actType";
@@ -41,6 +44,8 @@ public class ActivityStartEvent extends Event implements HasFacilityId, HasPerso
 	private final Id<Link> linkId;
 	private final Id<ActivityFacility> facilityId;
 	private final String acttype;
+
+	private final Attributes objectAttributes = new Attributes();
 
 	/*
 	Possible transition path to "coordinates in event":
@@ -109,5 +114,9 @@ public class ActivityStartEvent extends Event implements HasFacilityId, HasPerso
 	public void setCoord( Coord coord ) {
 		// yy  this is to retrofit the coordinate into existing events that don't have it.  :-(  kai, mar'20
 		this.coord = coord;
+	}
+
+	@Override public Attributes getObjectAttributes(){
+		return this.objectAttributes;
 	}
 }

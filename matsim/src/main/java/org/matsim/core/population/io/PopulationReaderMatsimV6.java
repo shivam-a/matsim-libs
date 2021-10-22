@@ -49,6 +49,7 @@ import org.matsim.core.utils.io.MatsimXmlParser;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.utils.objectattributes.AttributeConverter;
+import org.matsim.utils.objectattributes.attributable.Attributable;
 import org.matsim.utils.objectattributes.attributable.AttributesXmlReaderDelegate;
 import org.matsim.vehicles.Vehicle;
 import org.xml.sax.Attributes;
@@ -67,8 +68,6 @@ import com.google.inject.Inject;
 
 	private final static String POPULATION = "population";
 	private final static String PERSON = "person";
-	private final static String ATTRIBUTES = "attributes";
-	private final static String ATTRIBUTE = "attribute";
 	private final static String PLAN = "plan";
 	private final static String ACT = "activity";
 	private final static String LEG = "leg";
@@ -152,7 +151,7 @@ import com.google.inject.Inject;
 			case PERSON:
 				startPerson(atts);
 				break;
-			case ATTRIBUTES:
+			case Attributable.ATTRIBUTES:
 				switch( context.peek() ) {
 					case POPULATION:
 						currAttributes = scenario.getPopulation().getAttributes();
@@ -173,7 +172,7 @@ import com.google.inject.Inject;
 						throw new RuntimeException( context.peek() );
 				}
 				// deliberate fall-through
-			case ATTRIBUTE:
+			case Attributable.ATTRIBUTE:
 				attributesReader.startTag( name , atts ,context , currAttributes );
 				break;
 			case PLAN:
@@ -200,10 +199,10 @@ import com.google.inject.Inject;
 				this.plans.addPerson(this.currperson);
 				this.currperson = null;
 				break;
-			case ATTRIBUTE:
+			case Attributable.ATTRIBUTE:
 				this.attributesReader.endTag( name , content , context );
 				break;
-			case ATTRIBUTES:
+			case Attributable.ATTRIBUTES:
 				if (context.peek().equals(POPULATION)) {
 					String inputCRS = ProjectionUtils.getCRS(scenario.getPopulation());
 

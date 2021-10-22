@@ -56,6 +56,9 @@ import org.matsim.vehicles.Vehicle;
 	private static final Logger log = Logger.getLogger( PopulationWriterHandlerImplV6.class );
 
 	// TODO: infrastructure to inject converters
+	// yyyy: I am fairly sure that there is one central AttributeConverter that is injected.  I think we should be ok with one central
+	// AttributeConverter, even if this exposes converters that are meant for one namespace to some other namespace.  However, it still needs to
+	// be made sure that this is used here.  kai, oct'21
 	private final AttributesXmlWriterDelegate attributesWriter = new AttributesXmlWriterDelegate();
 	private final CoordinateTransformation coordinateTransformation;
 
