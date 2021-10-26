@@ -97,10 +97,13 @@ public class EventWriterXML implements EventWriter, BasicEventHandler {
 				this.out.append(encodeAttributeValue(entry.getValue()));
 				this.out.append("\" ");
 			}
-			if ( event instanceof ObjectAttributable ) {
-				this.attributesWriter.writeAttributes("\t\t\t\t", out, ((ObjectAttributable) event).getObjectAttributes());
+			if ( event instanceof ObjectAttributable && ! ((ObjectAttributable) event).getObjectAttributes().isEmpty()) {
+				this.out.append(">\n");
+				this.attributesWriter.writeAttributes("\t\t", out, ((ObjectAttributable) event).getObjectAttributes());
+				this.out.append("\t</event>\n");
+			} else {
+				this.out.append(" />\n");
 			}
-			this.out.append(" />\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
