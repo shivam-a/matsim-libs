@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
+import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
@@ -36,6 +37,7 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.testcases.utils.EventsCollector;
+import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 import java.io.File;
 
@@ -182,6 +184,41 @@ public class EventAttributesTest {
 
 	//------- Read-and-Write tests ------------
 	//TODO
+	/**
+	 * Read in an eventsFile, write it out and compare the results
+	 * Here: 2 Events with different ObjectAttributes
+	 */
+	@Test
+	public void testReadWrite(){
+		final String inputFile = utils.getClassInputDirectory() + "/testEvents.xml";
+		final String outputFile = utils.getOutputDirectory() + "testEvents.xml";
+
+		EventsManager events = EventsUtils.createEventsManager();
+
+		//read in
+		EventsCollector collector = new EventsCollector();
+		events.addHandler(collector);
+		events.initProcessing();
+
+		new MatsimEventsReader(events).readFile(inputFile);
+		events.finishProcessing();
+
+		assertEquals("there must be 3 evente.", 3, collector.getEvents().size());
+		Event readEvent = collector.getEvents().iterator().next();
+
+		//write out
+
+		EventWriterXML writer = new EventWriterXML(outputFile);
+		for (Event event : collector.getEvents()) {
+			writer.handleEvent(event);
+		}
+		writer.closeFile();
+		assertTrue(new File(outputFile).exists());
+
+		//compare
+		assertTrue(EventsFileComparator.compare(inputFile, outputFile) == EventsFileComparator.Result.FILES_ARE_EQUAL);
+		MatsimTestUtils.compareFilesLineByLine(inputFile, outputFile);
+	}
 
 
 	//------- Intern ------------

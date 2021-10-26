@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<events version="1.0">
+	<event time="3600.0" type="actstart" person="Agent1" link="link1" actType="Service" >
+		<attributes>
+			<attribute name="OA1" class="java.lang.String">value1</attribute>
+			<attribute name="OA2" class="java.lang.String">200</attribute>
+		</attributes>
+	</event>
+	<event time="7200.0" type="actstart" person="Agent2" link="link2" actType="work" >
+		<attributes>
+			<attribute name="OA42" class="java.lang.String">value2</attribute>
+		</attributes>
+	</event>
+	<event time="7200.0" type="actstart" person="Agent2" link="link3" actType="home" />
+</events>
