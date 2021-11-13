@@ -27,8 +27,8 @@ public class SimulatedAnnealing{
 	public static final  double PENALTY = 9999;
 	public static final double COST_PER_DRIVER = 100;
 
-	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_MINIMUM = 15;
+	public static final int SHIFTS_MAXIMUM = 40;
 	public static final int SHIFTS_REMOVAL = 2;
 	public static final int SHIFTS_INSERTION = 2;
 

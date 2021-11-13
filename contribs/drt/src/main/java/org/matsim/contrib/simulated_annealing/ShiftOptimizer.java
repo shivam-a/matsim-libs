@@ -81,6 +81,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		log.info("Number of submitted requests: " + SimulatedAnnealing.getSumOfValues(submitted));
 		log.info("Number of rejected requests: " + SimulatedAnnealing.getSumOfValues(rejections));
 		log.info("Average rejection rate: " + (SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size()));
+		log.info("Total Driver hours: " + SimulatedAnnealing.driverCost(bestIndividual));
 		FileWriter csvwriter = null;
 		try {
 			csvwriter = new FileWriter("test/output/holzkirchen_shifts/shift_log.txt", true);
@@ -97,17 +98,19 @@ public class ShiftOptimizer implements IterationEndsListener {
 //			csvwriter.write("cost");
 //			csvwriter.write("\n");
 
-			csvwriter.write(""+iterationEndsEvent.getIteration()+"");
+			csvwriter.write("" + iterationEndsEvent.getIteration()+"");
 			csvwriter.write(",");
-			csvwriter.write(""+bestSolution.getShifts().size()+"");
+			csvwriter.write("" + bestSolution.getShifts().size()+"");
 			csvwriter.write(",");
-			csvwriter.write(""+(int) SimulatedAnnealing.getSumOfValues(submitted)+"");
+			csvwriter.write("" + (int) SimulatedAnnealing.getSumOfValues(submitted) + "");
 			csvwriter.write(",");
-			csvwriter.write(""+(int) SimulatedAnnealing.getSumOfValues(rejections)+"");
+			csvwriter.write("" + (int) SimulatedAnnealing.getSumOfValues(rejections) + "");
 			csvwriter.write(",");
-			csvwriter.write(""+SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size()+"");
+			csvwriter.write("" + SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size() + "");
 			csvwriter.write(",");
-			csvwriter.write(""+(int) SimulatedAnnealing.getCostOfSolution(bestIndividual, rejections)+"");
+			csvwriter.write("" + (int)  SimulatedAnnealing.driverCost(bestIndividual) + "");
+			csvwriter.write(",");
+			csvwriter.write("" + (int) SimulatedAnnealing.getCostOfSolution(bestIndividual, rejections) + "");
 			csvwriter.write("\n");
 		} catch (IOException e) {
 			e.printStackTrace();
