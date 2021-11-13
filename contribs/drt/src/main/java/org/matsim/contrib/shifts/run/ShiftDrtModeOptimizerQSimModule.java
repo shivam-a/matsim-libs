@@ -1,5 +1,6 @@
 package org.matsim.contrib.shifts.run;
 
+import com.google.inject.Singleton;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.contrib.drt.optimizer.DefaultDrtOptimizer;
@@ -53,6 +54,8 @@ import org.matsim.contrib.shifts.schedule.ShiftDrtTaskFactoryImpl;
 import org.matsim.contrib.shifts.scheduler.ShiftDrtScheduleInquiry;
 import org.matsim.contrib.shifts.scheduler.ShiftTaskScheduler;
 import org.matsim.contrib.shifts.shift.DrtShiftUtils;
+import org.matsim.contrib.shifts.shift.DrtShifts;
+import org.matsim.contrib.simulated_annealing.ShiftOptimizer;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.modal.ModalProviders;
@@ -108,6 +111,11 @@ public class ShiftDrtModeOptimizerQSimModule extends AbstractDvrpModeQSimModule 
 			}
 		}).asEagerSingleton();
 
+		bindModal(DrtShifts.class).toProvider(modalProvider(getter -> {
+			ShiftOptimizer shiftOptimizer = getter.get(ShiftOptimizer.class);
+			return shiftOptimizer.getBestSolution();
+		})).in(Singleton.class);
+
 		bindModal(DrtShiftDispatcher.class).toProvider(new ModalProviders.AbstractProvider<>(drtCfg.getMode(), DvrpModes::mode) {
 			@Inject
 			private MobsimTimer timer;
@@ -118,7 +126,7 @@ public class ShiftDrtModeOptimizerQSimModule extends AbstractDvrpModeQSimModule 
 
 			@Override
 			public DrtShiftDispatcher get() {
-				return new DrtShiftDispatcherImpl(DrtShiftUtils.getShifts(scenario), getModalInstance(Fleet.class),
+				return new DrtShiftDispatcherImpl(this.getModalInstance(DrtShifts.class), getModalInstance(Fleet.class),
 						timer, getModalInstance(OperationFacilityFinder.class),
 						getModalInstance(ShiftTaskScheduler.class), getModalInstance(Network.class), eventsManager,
 						shiftConfigGroup);
