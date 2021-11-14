@@ -28,7 +28,7 @@ public class Perturbation {
 	 */
 	static protected Individual insertSingleSAShift(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
-		List<SAShift> newSAShiftList = perturbedIndividual.getShifts();
+		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
 		SAShift newSAShift = null;
 		if (newSAShiftList.size() > 0) {
 			newSAShift = moveSAShiftCorridor(moveSABreakCorridor(perturbedIndividual)).getShifts().get(random.nextInt(newSAShiftList.size()));
@@ -59,10 +59,11 @@ public class Perturbation {
 	static protected Individual removeSingleSAShift(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		SAShift newSAShift = null;
-		if (newSAShiftList.size() > 0)
+		SAShift newSAShift;
+		if (newSAShiftList.size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShift = newSAShiftList.get(random.nextInt(newSAShiftList.size()));
-		newSAShiftList.remove(newSAShift);
+			newSAShiftList.remove(newSAShift);
+		}
 		perturbedIndividual.setShifts(newSAShiftList);
 		return perturbedIndividual;
 	}
@@ -81,7 +82,7 @@ public class Perturbation {
 	public static Individual moveSAShiftCorridor(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		if (perturbedIndividual.getShifts().size() > 0) {
+		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -118,7 +119,7 @@ public class Perturbation {
 	public static Individual moveSABreakCorridor(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		if (perturbedIndividual.getShifts().size() > 0) {
+		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -153,7 +154,7 @@ public class Perturbation {
 	public static Individual increaseSABreakCorridor(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		if (perturbedIndividual.getShifts().size() > 0) {
+		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -189,7 +190,7 @@ public class Perturbation {
 	public static Individual decreaseSABreakCorridor(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		if (perturbedIndividual.getShifts().size() > 0) {
+		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -221,7 +222,7 @@ public class Perturbation {
 	public static Individual increaseSAShiftCorridor(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		if (perturbedIndividual.getShifts().size() > 0) {
+		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -257,7 +258,7 @@ public class Perturbation {
 	public static Individual decreaseSAShiftCorridor(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
-		if (perturbedIndividual.getShifts().size() > 0) {
+		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;

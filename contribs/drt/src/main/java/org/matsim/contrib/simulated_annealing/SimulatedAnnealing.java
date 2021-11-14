@@ -1,10 +1,10 @@
 package org.matsim.contrib.simulated_annealing;
 
+import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+
 import java.io.File;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Random;
-import java.util.TreeMap;
+import java.io.FileNotFoundException;
+import java.util.*;
 
 public class SimulatedAnnealing{
 	public final static double TIME_INTERVAL = 1800;
@@ -23,30 +23,35 @@ public class SimulatedAnnealing{
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
-	private static final double COST_PER_REJECTION = 1000;
+	private static final double COST_PER_REJECTION = 100;
 	public static final  double PENALTY = 9999;
-	public static final double COST_PER_DRIVER = 100;
+	public static final double COST_PER_DRIVER = 2;
 
-	public static final int SHIFTS_MINIMUM = 15;
-	public static final int SHIFTS_MAXIMUM = 40;
-	public static final int SHIFTS_REMOVAL = 2;
-	public static final int SHIFTS_INSERTION = 2;
+	public static final int SHIFTS_MINIMUM = 1;
+	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_REMOVAL = 10;
+	public static final int SHIFTS_INSERTION = 10;
 
 	public static final int ITERATIONS = 400;
 
 	public static Random random = new Random();
-	public static PerturbationType perturbationType = PerturbationType.INCREASE_SHIFT_CORRIDOR;
+	public static PerturbationType perturbationType = PerturbationType.WEIGHTED_PERTURB;
 
 
     public static void main(String[] args) {
         ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
         Individual individual = new Individual(readShift.getShifts());
-        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+		try {
+			regression();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+//        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        System.out.println(individual.getShifts().size());
-        Individual mutatedIndividual = perturb(individual).deepCopy();
-        for (int i = 0; i < 10000; i++)
-            mutatedIndividual = perturb(mutatedIndividual);
-        mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+//        Individual mutatedIndividual = perturb(individual).deepCopy();
+//        for (int i = 0; i < 10000; i++)
+//            mutatedIndividual = perturb(mutatedIndividual);
+//        mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        System.out.println(mutatedIndividual.getShifts().size());
 //        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        System.out.println(individual.getShifts().size());
@@ -60,6 +65,38 @@ public class SimulatedAnnealing{
 //        while (smallIndex > largeIndex)
 //        	largeIndex = random.nextInt(individual.getShifts().size());
     }
+	public static void regression () throws FileNotFoundException {
+		double[] columnDouble;
+		Map<String, double[]> rows = new LinkedHashMap<>();
+
+		Scanner sc = new Scanner(new File("test/output/saved/shift_log1_6.csv"));
+
+		int countRows = 0;
+		while (sc.hasNextLine())
+		{
+			String[] columnString = sc.nextLine().split(",");
+			columnDouble = Arrays.stream(columnString).mapToDouble(Double::valueOf).toArray();
+			rows.put(columnString[0], columnDouble);
+			countRows += 1;
+		}
+
+		double[] dependentVariable = new double[countRows];
+		double[][] independentVariable = new double[countRows][2];
+		List<String> rowIndex = new ArrayList<>(rows.keySet());
+
+		for (int i=0; i<countRows; i++) {
+			dependentVariable[i] = rows.get(rowIndex.get(i))[3];
+			independentVariable[i][0] = rows.get(rowIndex.get(i))[1];
+			independentVariable[i][1] = rows.get(rowIndex.get(i))[2];
+			System.out.println(Arrays.toString(rows.get(rowIndex.get(i))));
+		}
+
+		OLSMultipleLinearRegression model = new OLSMultipleLinearRegression();
+		model.newSampleData(dependentVariable, independentVariable);
+		System.out.println(Arrays.toString(model.estimateRegressionParameters()));
+		System.out.println(Arrays.toString(model.estimateResiduals()));
+
+	}
 
     public static Individual perturb(Individual individual) {
         if (perturbationType == PerturbationType.CHANGE_BREAK_CORRIDOR) {
