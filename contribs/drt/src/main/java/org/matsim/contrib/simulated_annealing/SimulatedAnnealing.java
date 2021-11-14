@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class SimulatedAnnealing{
+	/*// configuration 1
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
 	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
@@ -23,15 +24,229 @@ public class SimulatedAnnealing{
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
+	private static final double COST_PER_REJECTION = 1000;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 100;
+
+	public static final int SHIFTS_MINIMUM = 15;
+	public static final int SHIFTS_MAXIMUM = 45;
+	public static final int SHIFTS_REMOVAL = 2;
+	public static final int SHIFTS_INSERTION = 2;*/
+
+
+	/* // configuration 2
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 1000;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 100;
+
+	public static final int SHIFTS_MINIMUM = 1;
+	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_REMOVAL = 10;
+	public static final int SHIFTS_INSERTION = 10;*/
+
+	/* // configuration 3
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 1000;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 100;
+
+	public static final int SHIFTS_MINIMUM = 10;
+	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_REMOVAL = 20;
+	public static final int SHIFTS_INSERTION = 20;*/
+
+	// configuration 4
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 6 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
 	private static final double COST_PER_REJECTION = 100;
 	public static final  double PENALTY = 9999;
-	public static final double COST_PER_DRIVER = 2;
+	public static final double COST_PER_DRIVER = 1000;
+
+	public static final int SHIFTS_MINIMUM = 15;
+	public static final int SHIFTS_MAXIMUM = 45;
+	public static final int SHIFTS_REMOVAL = 2;
+	public static final int SHIFTS_INSERTION = 2;
+
+
+	/* // configuration 5
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 100;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 1000;
 
 	public static final int SHIFTS_MINIMUM = 1;
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
 	public static final int SHIFTS_INSERTION = 10;
+	*/
 
+	/* // configuration 6
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 100;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 1000;
+
+	public static final int SHIFTS_MINIMUM = 10;
+	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_REMOVAL = 20;
+	public static final int SHIFTS_INSERTION = 20;
+	*/
+
+	/* // configuration 7
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 6 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 100;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 100;
+
+	public static final int SHIFTS_MINIMUM = 15;
+	public static final int SHIFTS_MAXIMUM = 45;
+	public static final int SHIFTS_REMOVAL = 2;
+	public static final int SHIFTS_INSERTION = 2;
+	*/
+
+	/* // configuration 8
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 100;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 100;
+
+	public static final int SHIFTS_MINIMUM = 1;
+	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_REMOVAL = 10;
+	public static final int SHIFTS_INSERTION = 10;
+	*/
+
+	/* // configuration 9
+	public final static double TIME_INTERVAL = 1800;
+	public final static double START_SCHEDULE_TIME = 0;
+	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
+
+	public final static double DESIRED_REJECTION_RATE = 0.2;
+
+	public static final double BREAK_CORRIDOR_BUFFER = 1800;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
+
+	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
+	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+
+	public static final double INITIAL_TEMPERATURE = 1000;
+
+	private static final double COST_PER_REJECTION = 100;
+	public static final  double PENALTY = 9999;
+	public static final double COST_PER_DRIVER = 100;
+
+	public static final int SHIFTS_MINIMUM = 10;
+	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_REMOVAL = 20;
+	public static final int SHIFTS_INSERTION = 20;
+	*/
 	public static final int ITERATIONS = 400;
 
 	public static Random random = new Random();
@@ -157,6 +372,7 @@ public class SimulatedAnnealing{
         }
         else if (perturbationType == PerturbationType.WEIGHTED_PERTURB) {
 			RandomCollection<Object> rc = new RandomCollection<>()
+					 // config 1,2; 4,5; 7,8;
 					.add(15, Perturbation.insertSAShifts(individual))
 					.add(15, Perturbation.removeSAShifts(individual))
 					.add(25, Perturbation.moveSABreakCorridor(individual))
@@ -165,6 +381,15 @@ public class SimulatedAnnealing{
 					.add(5, Perturbation.decreaseSABreakCorridor(individual))
 					.add(5, Perturbation.increaseSAShiftCorridor(individual))
 					.add(5, Perturbation.decreaseSAShiftCorridor(individual));
+					/* // config 3; 6; 9;
+					.add(5, Perturbation.insertSAShifts(individual))
+					.add(5, Perturbation.removeSAShifts(individual))
+					.add(15, Perturbation.moveSABreakCorridor(individual))
+					.add(15, Perturbation.moveSAShiftCorridor(individual))
+					.add(15, Perturbation.increaseSABreakCorridor(individual))
+					.add(15, Perturbation.decreaseSABreakCorridor(individual))
+					.add(15, Perturbation.increaseSAShiftCorridor(individual))
+					.add(15, Perturbation.decreaseSAShiftCorridor(individual));*/
 
 			return (Individual) rc.next();
 		}

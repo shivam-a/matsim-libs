@@ -112,7 +112,7 @@ public class Perturbation {
 			}
 		}
 		perturbedIndividual.setShifts(newSAShiftList);
-		log.info("change shift timings perturbation has been used");
+		log.info("move shift timings perturbation has been used");
 		return perturbedIndividual;
 	}
 
@@ -148,7 +148,7 @@ public class Perturbation {
 			}
 		}
 		perturbedIndividual.setShifts(newSAShiftList);
-		log.info("change break corridor perturbation has been used");
+		log.info("move break corridor perturbation has been used");
 		return perturbedIndividual;
 	}
 	public static Individual increaseSABreakCorridor(Individual individual) {
