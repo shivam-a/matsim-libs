@@ -80,6 +80,7 @@ public class SimulatedAnnealing{
 			countRows += 1;
 		}
 
+		countRows=50;
 		double[] dependentVariable = new double[countRows];
 		double[][] independentVariable = new double[countRows][2];
 		List<String> rowIndex = new ArrayList<>(rows.keySet());
@@ -88,6 +89,7 @@ public class SimulatedAnnealing{
 			dependentVariable[i] = rows.get(rowIndex.get(i))[3];
 			independentVariable[i][0] = rows.get(rowIndex.get(i))[1];
 			independentVariable[i][1] = rows.get(rowIndex.get(i))[2];
+//			independentVariable[i][2] = rows.get(rowIndex.get(i))[6];
 			System.out.println(Arrays.toString(rows.get(rowIndex.get(i))));
 		}
 
@@ -95,7 +97,8 @@ public class SimulatedAnnealing{
 		model.newSampleData(dependentVariable, independentVariable);
 		System.out.println(Arrays.toString(model.estimateRegressionParameters()));
 		System.out.println(Arrays.toString(model.estimateResiduals()));
-
+		System.out.println(model.calculateRSquared());
+		System.out.println(model.calculateAdjustedRSquared());
 	}
 
     public static Individual perturb(Individual individual) {
@@ -227,7 +230,7 @@ public class SimulatedAnnealing{
     public static double driverCost(Individual individual) {
         double sum = 0;
         for (SAShift SAShift : individual.getShifts()) {
-            sum += SAShift.getEncodedShift().size();
+            sum += SAShift.getEndTime() - SAShift.getStartTime();
         }
         return sum;
     }
