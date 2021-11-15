@@ -34,7 +34,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_INSERTION = 2;*/
 
 
-	/* // configuration 2
+	 // configuration 2
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
 	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
@@ -45,7 +45,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final int SHIFT_CORRIDOR_BUFFER = 1800;
 	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
 	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
 
@@ -58,7 +58,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MINIMUM = 1;
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
-	public static final int SHIFTS_INSERTION = 10;*/
+	public static final int SHIFTS_INSERTION = 10;
 
 	/* // configuration 3
 	public final static double TIME_INTERVAL = 1800;
@@ -71,7 +71,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final int SHIFT_CORRIDOR_BUFFER = 0;
 	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
 	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
 
@@ -86,7 +86,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;*/
 
-	// configuration 4
+	/*// configuration 4
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
 	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
@@ -110,7 +110,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MINIMUM = 15;
 	public static final int SHIFTS_MAXIMUM = 45;
 	public static final int SHIFTS_REMOVAL = 2;
-	public static final int SHIFTS_INSERTION = 2;
+	public static final int SHIFTS_INSERTION = 2;*/
 
 
 	/* // configuration 5
@@ -124,7 +124,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final int SHIFT_CORRIDOR_BUFFER = 1800;
 	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
 	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
 
@@ -137,8 +137,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MINIMUM = 1;
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
-	public static final int SHIFTS_INSERTION = 10;
-	*/
+	public static final int SHIFTS_INSERTION = 10;*/
 
 	/* // configuration 6
 	public final static double TIME_INTERVAL = 1800;
@@ -151,7 +150,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final int SHIFT_CORRIDOR_BUFFER = 0;
 	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
 	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
 
@@ -166,7 +165,6 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
 	*/
-
 	/* // configuration 7
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
@@ -193,7 +191,6 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_REMOVAL = 2;
 	public static final int SHIFTS_INSERTION = 2;
 	*/
-
 	/* // configuration 8
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
@@ -205,7 +202,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final int SHIFT_CORRIDOR_BUFFER = 1800;
 	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
 	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
 
@@ -232,7 +229,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 1800 * 10;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
+	public static final int SHIFT_CORRIDOR_BUFFER = 0;
 	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
 	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
 
@@ -256,17 +253,17 @@ public class SimulatedAnnealing{
     public static void main(String[] args) {
         ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
         Individual individual = new Individual(readShift.getShifts());
-		try {
-			regression();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-//        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-//        System.out.println(individual.getShifts().size());
-//        Individual mutatedIndividual = perturb(individual).deepCopy();
-//        for (int i = 0; i < 10000; i++)
-//            mutatedIndividual = perturb(mutatedIndividual);
-//        mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+//		try {
+//			regression();
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
+        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+        System.out.println(individual.getShifts().size());
+        Individual mutatedIndividual = Perturbation.moveSABreakCorridor(individual).deepCopy();
+        for (int i = 0; i < 100; i++)
+            mutatedIndividual = Perturbation.moveSABreakCorridor(mutatedIndividual);
+        mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        System.out.println(mutatedIndividual.getShifts().size());
 //        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        System.out.println(individual.getShifts().size());
@@ -317,16 +314,16 @@ public class SimulatedAnnealing{
 	}
 
     public static Individual perturb(Individual individual) {
-        if (perturbationType == PerturbationType.CHANGE_BREAK_CORRIDOR) {
+        if (perturbationType == PerturbationType.MOVE_BREAK_CORRIDOR) {
             return Perturbation.moveSABreakCorridor(individual);
         }
         else if (perturbationType == PerturbationType.INSERT_SHIFT) {
 
             return Perturbation.insertSAShifts(individual);
         }
-        else if (perturbationType == PerturbationType.CHANGE_SHIFT_TIMINGS) {
+        else if (perturbationType == PerturbationType.MOVE_SHIFT_TIMINGS) {
 
-            return Perturbation.moveSAShiftCorridor(individual);
+            return Perturbation.moveSAShiftTimings(individual);
         }
         else if (perturbationType == PerturbationType.REMOVE_SHIFT) {
 
@@ -356,7 +353,7 @@ public class SimulatedAnnealing{
                 case 1:
                     return Perturbation.moveSABreakCorridor(individual);
                 case 2:
-                    return Perturbation.moveSAShiftCorridor(individual);
+                    return Perturbation.moveSAShiftTimings(individual);
                 case 3:
                     return Perturbation.insertSAShifts(individual);
                 case 4:
@@ -376,7 +373,7 @@ public class SimulatedAnnealing{
 					.add(15, Perturbation.insertSAShifts(individual))
 					.add(15, Perturbation.removeSAShifts(individual))
 					.add(25, Perturbation.moveSABreakCorridor(individual))
-					.add(25, Perturbation.moveSAShiftCorridor(individual))
+					.add(25, Perturbation.moveSAShiftTimings(individual))
 					.add(5, Perturbation.increaseSABreakCorridor(individual))
 					.add(5, Perturbation.decreaseSABreakCorridor(individual))
 					.add(5, Perturbation.increaseSAShiftCorridor(individual))
@@ -385,12 +382,12 @@ public class SimulatedAnnealing{
 					.add(5, Perturbation.insertSAShifts(individual))
 					.add(5, Perturbation.removeSAShifts(individual))
 					.add(15, Perturbation.moveSABreakCorridor(individual))
-					.add(15, Perturbation.moveSAShiftCorridor(individual))
+					.add(15, Perturbation.moveSAShiftTimings(individual))
 					.add(15, Perturbation.increaseSABreakCorridor(individual))
 					.add(15, Perturbation.decreaseSABreakCorridor(individual))
 					.add(15, Perturbation.increaseSAShiftCorridor(individual))
-					.add(15, Perturbation.decreaseSAShiftCorridor(individual));*/
-
+					.add(15, Perturbation.decreaseSAShiftCorridor(individual));
+*/
 			return (Individual) rc.next();
 		}
         return individual;
@@ -463,8 +460,8 @@ public class SimulatedAnnealing{
     public enum PerturbationType {
         REMOVE_SHIFT,
         INSERT_SHIFT,
-        CHANGE_BREAK_CORRIDOR,
-        CHANGE_SHIFT_TIMINGS,
+		MOVE_BREAK_CORRIDOR,
+		MOVE_SHIFT_TIMINGS,
         INCREASE_SHIFT_CORRIDOR,
         DECREASE_SHIFT_CORRIDOR,
         INCREASE_BREAK_CORRIDOR,

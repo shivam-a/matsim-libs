@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.shifts.shift.DrtShift;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -31,7 +30,7 @@ public class Perturbation {
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
 		SAShift newSAShift = null;
 		if (newSAShiftList.size() > 0) {
-			newSAShift = moveSAShiftCorridor(moveSABreakCorridor(perturbedIndividual)).getShifts().get(random.nextInt(newSAShiftList.size()));
+			newSAShift = moveSAShiftTimings(moveSABreakCorridor(perturbedIndividual)).getShifts().get(random.nextInt(newSAShiftList.size()));
 			newSAShift.setId(Id.create(newSAShift.getId() + "_" + random.nextInt(), DrtShift.class));
 			newSAShift.encodeShiftV2();
 		}
@@ -79,7 +78,7 @@ public class Perturbation {
 		return perturbedIndividual;
 	}
 
-	public static Individual moveSAShiftCorridor(Individual individual) {
+	public static Individual moveSAShiftTimings(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
 		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
@@ -130,7 +129,7 @@ public class Perturbation {
 				SAShift newSAShift = oldSAShift.deepCopy();
 				if (i >= smallIndex && i <= largeIndex) {
 					// difference between the end of schedule and end of shift
-					double movableDistanceSize = oldSAShift.getEndTime() - oldSAShift.getStartTime() - (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) - (2 * SimulatedAnnealing.BREAK_CORRIDOR_BUFFER);
+					double movableDistanceSize = oldSAShift.getEndTime() - oldSAShift.getStartTime() - (2 * SimulatedAnnealing.BREAK_CORRIDOR_BUFFER);
 					// find any value in between the movableDistanceSize and increment all values
 					double newEarliestStart = oldSAShift.getSABreak().getEarliestStart(), newLatestEnd = oldSAShift.getSABreak().getLatestEnd(), moveAhead;
 					if (movableDistanceSize > 0) {
