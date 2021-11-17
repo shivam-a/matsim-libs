@@ -18,7 +18,7 @@ public class RejectionTracker implements PassengerRequestRejectedEventHandler, D
 	private final Map<Double, Double> submittedPerTimeBin = new LinkedHashMap<>();
 	private double submittedCounter = 0;
 	private double rejectedCounter = 0;
-	private final static double timeBinSize = SimulatedAnnealing.TIME_INTERVAL;
+	private final static double timeBinSize = 3600;
 	private final static Logger logger = Logger.getLogger(RejectionTracker.class);
 
 	public Map<Double, Double> getRejectionsPerTimeBin() {

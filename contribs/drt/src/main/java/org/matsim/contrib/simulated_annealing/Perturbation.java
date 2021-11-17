@@ -132,7 +132,7 @@ public class Perturbation {
 					double movableDistanceSize = oldSAShift.getEndTime() - oldSAShift.getStartTime() - (2 * SimulatedAnnealing.BREAK_CORRIDOR_BUFFER);
 					// find any value in between the movableDistanceSize and increment all values
 					double newEarliestStart = oldSAShift.getSABreak().getEarliestStart(), newLatestEnd = oldSAShift.getSABreak().getLatestEnd(), moveAhead;
-					if (movableDistanceSize > 0) {
+					if ((movableDistanceSize / SimulatedAnnealing.TIME_INTERVAL) > 1) {
 						moveAhead = random.nextInt((int) (movableDistanceSize / SimulatedAnnealing.TIME_INTERVAL) - 1);
 						newEarliestStart = oldSAShift.getStartTime() + SimulatedAnnealing.BREAK_CORRIDOR_BUFFER + moveAhead * SimulatedAnnealing.TIME_INTERVAL;
 						newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart());
@@ -168,10 +168,12 @@ public class Perturbation {
 					double additionalStartDistanceSize = oldSAShift.getSABreak().getEarliestStart() - oldSAShift.getStartTime();
 					// find any value in between the movableDistanceSize and increment all values
 					double newEarliestStart = oldSAShift.getSABreak().getEarliestStart(), newLatestEnd = oldSAShift.getSABreak().getLatestEnd();
-					if (additionalEndDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.BREAK_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-						newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) + SimulatedAnnealing.TIME_INTERVAL;
-					} else if (additionalStartDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.BREAK_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-						newEarliestStart = newEarliestStart - SimulatedAnnealing.TIME_INTERVAL;
+					if ((newLatestEnd - newEarliestStart) < SimulatedAnnealing.BREAK_CORRIDOR_MAXIMUM_LENGTH) {
+						if (additionalEndDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.BREAK_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
+							newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) + SimulatedAnnealing.TIME_INTERVAL;
+						} else if (additionalStartDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.BREAK_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
+							newEarliestStart = newEarliestStart - SimulatedAnnealing.TIME_INTERVAL;
+						}
 					}
 					SABreak newSABreak = new SABreak(newEarliestStart, newLatestEnd, oldSAShift.getSABreak().getDuration());
 					newSAShift = new SAShift(oldSAShift.getId(), oldSAShift.getStartTime(), oldSAShift.getEndTime());
@@ -218,7 +220,7 @@ public class Perturbation {
 		return perturbedIndividual;
 	}
 
-	public static Individual increaseSAShiftCorridor(Individual individual) {
+	public static Individual increaseSAShiftTimings(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
 		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
@@ -236,10 +238,12 @@ public class Perturbation {
 					double additionalStartDistanceSize = oldSAShift.getStartTime() - SimulatedAnnealing.START_SCHEDULE_TIME;
 					// find any value in between the movableDistanceSize and increment all values
 					double newStart = oldSAShift.getStartTime(), newEnd = oldSAShift.getEndTime();
-					if (additionalEndDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.SHIFT_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-						newEnd = newStart + (oldSAShift.getEndTime() - oldSAShift.getStartTime()) + SimulatedAnnealing.TIME_INTERVAL;
-					} else if (additionalStartDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.SHIFT_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-						newStart = newStart - SimulatedAnnealing.TIME_INTERVAL;
+					if ((newEnd - newStart) < SimulatedAnnealing.SHIFT_CORRIDOR_MAXIMUM_LENGTH) {
+						if (additionalEndDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.SHIFT_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
+							newEnd = newStart + (oldSAShift.getEndTime() - oldSAShift.getStartTime()) + SimulatedAnnealing.TIME_INTERVAL;
+						} else if (additionalStartDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.SHIFT_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
+							newStart = newStart - SimulatedAnnealing.TIME_INTERVAL;
+						}
 					}
 					SABreak newSABreak = new SABreak(oldSAShift.getSABreak().getEarliestStart(), oldSAShift.getSABreak().getLatestEnd(), oldSAShift.getSABreak().getDuration());
 					newSAShift = new SAShift(oldSAShift.getId(), newStart, newEnd);
@@ -250,11 +254,11 @@ public class Perturbation {
 			}
 		}
 		perturbedIndividual.setShifts(newSAShiftList);
-		log.info("increase shift corridor size perturbation has been used");
+		log.info("increase shift timings size perturbation has been used");
 		return perturbedIndividual;
 	}
 
-	public static Individual decreaseSAShiftCorridor(Individual individual) {
+	public static Individual decreaseSAShiftTimings(Individual individual) {
 		Individual perturbedIndividual = individual.deepCopy();
 		List<SAShift> newSAShiftList = perturbedIndividual.deepCopy().getShifts();
 		if (perturbedIndividual.getShifts().size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
@@ -283,7 +287,7 @@ public class Perturbation {
 			}
 		}
 		perturbedIndividual.setShifts(newSAShiftList);
-		log.info("decrease shift corridor size perturbation has been used");
+		log.info("decrease shift timings size perturbation has been used");
 		return perturbedIndividual;
 	}
 }

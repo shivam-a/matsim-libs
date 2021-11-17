@@ -81,7 +81,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		log.info("Number of submitted requests: " + SimulatedAnnealing.getSumOfValues(submitted));
 		log.info("Number of rejected requests: " + SimulatedAnnealing.getSumOfValues(rejections));
 		log.info("Average rejection rate: " + (SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size()));
-		log.info("Total Driver hours: " + SimulatedAnnealing.driverCost(bestIndividual));
+		log.info("Total Driver hours: " + SimulatedAnnealing.eachShiftDriverHour(bestIndividual));
 		FileWriter csvwriter = null;
 		try {
 			csvwriter = new FileWriter("test/output/holzkirchen_shifts/shift_log.txt", true);
@@ -108,7 +108,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 			csvwriter.write(",");
 			csvwriter.write("" + SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size() + "");
 			csvwriter.write(",");
-			csvwriter.write("" + (int)  SimulatedAnnealing.driverCost(bestIndividual) + "");
+			csvwriter.write("" + (int)  SimulatedAnnealing.eachShiftDriverHour(bestIndividual) + "");
 			csvwriter.write(",");
 			csvwriter.write("" + (int) SimulatedAnnealing.getCostOfSolution(bestIndividual, rejections) + "");
 			csvwriter.write("\n");
