@@ -32,7 +32,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 45;
 	public static final int SHIFTS_REMOVAL = 2;
 	public static final int SHIFTS_INSERTION = 2;
-
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
 
 	/* // configuration 2
 	public final static double TIME_INTERVAL = 1800;
@@ -59,7 +59,9 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
 	public static final int SHIFTS_INSERTION = 10;
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
 	*/
+
 	/*// configuration 3
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
@@ -84,7 +86,9 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MINIMUM = 10;
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 20;
-	public static final int SHIFTS_INSERTION = 20;*/
+	public static final int SHIFTS_INSERTION = 20;
+	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 15, 15, 15, 15, 15, 15};
+	*/
 
 	/*// configuration 4
 	public final static double TIME_INTERVAL = 1800;
@@ -110,7 +114,9 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MINIMUM = 15;
 	public static final int SHIFTS_MAXIMUM = 45;
 	public static final int SHIFTS_REMOVAL = 2;
-	public static final int SHIFTS_INSERTION = 2;*/
+	public static final int SHIFTS_INSERTION = 2;
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
+	*/
 
 
 	/* // configuration 5
@@ -137,7 +143,9 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MINIMUM = 1;
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
-	public static final int SHIFTS_INSERTION = 10;*/
+	public static final int SHIFTS_INSERTION = 10;
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
+	*/
 
 	/* // configuration 6
 	public final static double TIME_INTERVAL = 1800;
@@ -164,6 +172,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
+	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 15, 15, 15, 15, 15, 15};
 	*/
 
 	/* // configuration 7
@@ -191,7 +200,9 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 45;
 	public static final int SHIFTS_REMOVAL = 2;
 	public static final int SHIFTS_INSERTION = 2;
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
 	*/
+
 	/* // configuration 8
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
@@ -217,6 +228,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
 	public static final int SHIFTS_INSERTION = 10;
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
 	*/
 
 	/* // configuration 9
@@ -244,11 +256,13 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
+	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 15, 15, 15, 15, 15, 15};
 	*/
+
 	public static final int ITERATIONS = 400;
 
 	public static Random random = new Random();
-	public static PerturbationType perturbationType = PerturbationType.INCREASE_SHIFT_CORRIDOR;
+	public static PerturbationType perturbationType = PerturbationType.WEIGHTED_PERTURB;
 
 
     public static void main(String[] args) {
@@ -378,25 +392,14 @@ public class SimulatedAnnealing{
         }
         else if (perturbationType == PerturbationType.WEIGHTED_PERTURB) {
 			RandomCollection<Object> rc = new RandomCollection<>()
-					 // config 1,2; 4,5; 7,8;
-					.add(15, Perturbation.insertSAShifts(individual))
-					.add(15, Perturbation.removeSAShifts(individual))
-					.add(25, Perturbation.moveSABreakCorridor(individual))
-					.add(25, Perturbation.moveSAShiftTimings(individual))
-					.add(5, Perturbation.increaseSABreakCorridor(individual))
-					.add(5, Perturbation.decreaseSABreakCorridor(individual))
-					.add(5, Perturbation.increaseSAShiftTimings(individual))
-					.add(5, Perturbation.decreaseSAShiftTimings(individual));
-					/* // config 3; 6; 9;
-					.add(5, Perturbation.insertSAShifts(individual))
-					.add(5, Perturbation.removeSAShifts(individual))
-					.add(15, Perturbation.moveSABreakCorridor(individual))
-					.add(15, Perturbation.moveSAShiftTimings(individual))
-					.add(15, Perturbation.increaseSABreakCorridor(individual))
-					.add(15, Perturbation.decreaseSABreakCorridor(individual))
-					.add(15, Perturbation.increaseSAShiftCorridor(individual))
-					.add(15, Perturbation.decreaseSAShiftCorridor(individual));
-*/
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.insertSAShifts(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.removeSAShifts(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.moveSABreakCorridor(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.moveSAShiftTimings(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.increaseSABreakCorridor(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.decreaseSABreakCorridor(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.increaseSAShiftTimings(individual))
+					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.decreaseSAShiftTimings(individual));
 			return (Individual) rc.next();
 		}
         return individual;
