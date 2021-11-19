@@ -53,7 +53,9 @@ public class ShiftOptimizer implements IterationEndsListener {
         if (initialSolution == null)
             log.warn("initial solution is null");
         else {
-			Individual newIndividual = SimulatedAnnealing.perturb(currentIndividual);
+			Individual newIndividual = currentIndividual.deepCopy();
+			for (int i = 0; i < SimulatedAnnealing.random.nextInt(currentIndividual.getShifts().size()); i++)
+				newIndividual = SimulatedAnnealing.perturb(currentIndividual);
             newSolution = getDrtShiftsFromIndividual(newIndividual);
             newIndividualCost = SimulatedAnnealing.getCostOfSolution(newIndividual, rejections);
             currentIndividualCost = SimulatedAnnealing.getCostOfSolution(currentIndividual, rejections);

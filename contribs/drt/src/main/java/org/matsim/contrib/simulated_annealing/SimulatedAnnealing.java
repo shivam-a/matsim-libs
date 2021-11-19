@@ -7,20 +7,20 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class SimulatedAnnealing{
-	// configuration 1
+	/*// configuration 1
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
 	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 6 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 8 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -32,7 +32,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 45;
 	public static final int SHIFTS_REMOVAL = 2;
 	public static final int SHIFTS_INSERTION = 2;
-	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};*/
 
 	/* // configuration 2
 	public final static double TIME_INTERVAL = 1800;
@@ -41,13 +41,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 1800;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -59,23 +59,22 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
 	public static final int SHIFTS_INSERTION = 10;
-	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
-	*/
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};*/
 
-	/*// configuration 3
+	// configuration 3
 	public final static double TIME_INTERVAL = 1800;
 	public final static double START_SCHEDULE_TIME = 0;
 	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2.5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 0;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -88,7 +87,6 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
 	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 15, 15, 15, 15, 15, 15};
-	*/
 
 	/*// configuration 4
 	public final static double TIME_INTERVAL = 1800;
@@ -97,13 +95,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 6 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -115,8 +113,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 45;
 	public static final int SHIFTS_REMOVAL = 2;
 	public static final int SHIFTS_INSERTION = 2;
-	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
-	*/
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};*/
 
 
 	/* // configuration 5
@@ -126,13 +123,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 1800;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -144,8 +141,7 @@ public class SimulatedAnnealing{
 	public static final int SHIFTS_MAXIMUM = 1000;
 	public static final int SHIFTS_REMOVAL = 10;
 	public static final int SHIFTS_INSERTION = 10;
-	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};
-	*/
+	public static final int[] PERTURBATION_WEIGHTAGE = {15, 15, 25, 25, 5, 5, 5, 5};*/
 
 	/* // configuration 6
 	public final static double TIME_INTERVAL = 1800;
@@ -154,13 +150,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 0;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -182,13 +178,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 3600;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 6 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -210,13 +206,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 1800;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 4 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 9 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -238,13 +234,13 @@ public class SimulatedAnnealing{
 
 	public final static double DESIRED_REJECTION_RATE = 0.2;
 
-	public static final double BREAK_CORRIDOR_BUFFER = 1800;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 3600;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 5 * 60 * 60;
+	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
+	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
+	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_CORRIDOR_BUFFER = 0;
-	public static final double SHIFT_CORRIDOR_MINIMUM_LENGTH = 2 * 60 * 60;
-	public static final double SHIFT_CORRIDOR_MAXIMUM_LENGTH = 10 * 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
+	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
 	public static final double INITIAL_TEMPERATURE = 1000;
 
@@ -262,23 +258,27 @@ public class SimulatedAnnealing{
 	public static final int ITERATIONS = 400;
 
 	public static Random random = new Random();
-	public static PerturbationType perturbationType = PerturbationType.WEIGHTED_PERTURB;
+	public static PerturbationType perturbationType = PerturbationType.MOVE_SHIFT_TIMINGS;
 
 
     public static void main(String[] args) {
         ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
         Individual individual = new Individual(readShift.getShifts());
-		try {
-			regression();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-//        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+//		try {
+//			regression();
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
+        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        double sum = 0;
-//		Individual mutatedIndividual = individual.deepCopy();
-//		for (int i = 0; i < 5000; i++)
-//		mutatedIndividual = Perturbation.increaseSAShiftTimings(mutatedIndividual);
-//		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+		Individual mutatedIndividual = individual.deepCopy();
+		for (int i = 0; i < 100; i++)
+			mutatedIndividual = perturb(mutatedIndividual);
+		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+		Individual mutatedIndividual2 = Perturbation.moveSAShiftTimings(mutatedIndividual);
+		for (int i = 0; i < 100; i++)
+			mutatedIndividual2 = Perturbation.moveSAShiftTimings(mutatedIndividual2);
+		mutatedIndividual2.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //		for (SAShift SAShift : mutatedIndividual.getShifts()) {
 //			System.out.println((SAShift.getEndTime()- SAShift.getStartTime()) / 3600);
 //		}
@@ -352,19 +352,19 @@ public class SimulatedAnnealing{
 
             return Perturbation.removeSAShifts(individual);
         }
-        else if (perturbationType == PerturbationType.INCREASE_BREAK_CORRIDOR) {
-
-            return Perturbation.increaseSABreakCorridor(individual);
-        }
-        else if (perturbationType == PerturbationType.DECREASE_BREAK_CORRIDOR) {
-
-            return Perturbation.decreaseSABreakCorridor(individual);
-        }
-        else if (perturbationType == PerturbationType.INCREASE_SHIFT_CORRIDOR) {
+//        else if (perturbationType == PerturbationType.INCREASE_BREAK_CORRIDOR) {
+//
+//            return Perturbation.increaseSABreakCorridor(individual);
+//        }
+//        else if (perturbationType == PerturbationType.DECREASE_BREAK_CORRIDOR) {
+//
+//            return Perturbation.decreaseSABreakCorridor(individual);
+//        }
+        else if (perturbationType == PerturbationType.INCREASE_SHIFT_TIMINGS) {
 
             return Perturbation.increaseSAShiftTimings(individual);
         }
-        else if (perturbationType == PerturbationType.DECREASE_SHIFT_CORRIDOR) {
+        else if (perturbationType == PerturbationType.DECREASE_SHIFT_TIMINGS) {
 
             return Perturbation.decreaseSAShiftTimings(individual);
         }
@@ -381,25 +381,25 @@ public class SimulatedAnnealing{
                     return Perturbation.insertSAShifts(individual);
                 case 4:
                     return Perturbation.increaseSAShiftTimings(individual);
+//                case 4:
+//                    return Perturbation.increaseSABreakCorridor(individual);
                 case 5:
-                    return Perturbation.increaseSABreakCorridor(individual);
-                case 6:
                     return Perturbation.decreaseSAShiftTimings(individual);
-                case 7:
-                    return Perturbation.decreaseSABreakCorridor(individual);
+//                case 5:
+//                    return Perturbation.decreaseSABreakCorridor(individual);
 
             }
         }
         else if (perturbationType == PerturbationType.WEIGHTED_PERTURB) {
 			RandomCollection<Object> rc = new RandomCollection<>()
 					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.insertSAShifts(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.removeSAShifts(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.moveSABreakCorridor(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.moveSAShiftTimings(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.increaseSABreakCorridor(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.decreaseSABreakCorridor(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.increaseSAShiftTimings(individual))
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.decreaseSAShiftTimings(individual));
+					.add(PERTURBATION_WEIGHTAGE[1], Perturbation.removeSAShifts(individual))
+					.add(PERTURBATION_WEIGHTAGE[2], Perturbation.moveSABreakCorridor(individual))
+					.add(PERTURBATION_WEIGHTAGE[3], Perturbation.moveSAShiftTimings(individual))
+//					.add(PERTURBATION_WEIGHTAGE[4], Perturbation.increaseSABreakCorridor(individual))
+//					.add(PERTURBATION_WEIGHTAGE[5], Perturbation.decreaseSABreakCorridor(individual))
+					.add(PERTURBATION_WEIGHTAGE[6], Perturbation.increaseSAShiftTimings(individual))
+					.add(PERTURBATION_WEIGHTAGE[7], Perturbation.decreaseSAShiftTimings(individual));
 			return (Individual) rc.next();
 		}
         return individual;
@@ -464,7 +464,7 @@ public class SimulatedAnnealing{
     public static double eachShiftDriverHour(Individual individual) {
         double sum = 0;
         for (SAShift SAShift : individual.getShifts()) {
-            sum += SAShift.getEndTime() - SAShift.getStartTime();
+            sum += (SAShift.getEndTime() - SAShift.getStartTime()) / 3600;
         }
         return sum;
     }
@@ -474,8 +474,8 @@ public class SimulatedAnnealing{
         INSERT_SHIFT,
 		MOVE_BREAK_CORRIDOR,
 		MOVE_SHIFT_TIMINGS,
-        INCREASE_SHIFT_CORRIDOR,
-        DECREASE_SHIFT_CORRIDOR,
+        INCREASE_SHIFT_TIMINGS,
+        DECREASE_SHIFT_TIMINGS,
         INCREASE_BREAK_CORRIDOR,
         DECREASE_BREAK_CORRIDOR,
         RANDOM_PERTURB,

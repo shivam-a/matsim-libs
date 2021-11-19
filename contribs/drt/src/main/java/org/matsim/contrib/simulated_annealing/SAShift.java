@@ -118,14 +118,14 @@ public class SAShift {
         encodedShift = new LinkedHashMap<>();
         initializeEncoding(encodedShift);
         for (var entry: encodedShift.entrySet()) {
-            if (entry.getKey() >= start && entry.getKey() <= end) {
+            if (entry.getKey() >= start && entry.getKey() < end) {
                 encodedShift.put(entry.getKey(), 1.0);
             }
         }
         List<Double> timeBins = new LinkedList<>(encodedShift.keySet());
         for (double timeBin: timeBins) {
             if (getSABreak() != null) {
-                if (timeBin >= getSABreak().getEarliestStart() && timeBin <= getSABreak().getLatestEnd())
+                if (timeBin >= getSABreak().getEarliestStart() && timeBin < getSABreak().getLatestEnd())
                     encodedShift.put(timeBin, 2.0);
             }
         }
@@ -139,27 +139,25 @@ public class SAShift {
         Double earliestStart = encodedSAShift.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue() == 2.0).map(Map.Entry::getKey).findFirst().orElse(null);
         Double latestEnd = encodedSAShift.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue().intValue() == 2.0).map(Map.Entry::getKey).reduce((__, last) -> last).orElse(null);
         double breakDuration = 0;
-        if (start != null && end != null && earliestStart != null && latestEnd != null) {
-            decodedSAShift.setStartTime(start);
-            decodedSAShift.setEndTime(end);
-            if (((latestEnd - earliestStart) > SimulatedAnnealing.BREAK_CORRIDOR_MAXIMUM_LENGTH) &&
-                    ((end - start) > SimulatedAnnealing.SHIFT_CORRIDOR_MAXIMUM_LENGTH)) {
-                breakDuration = 3600;
-            }
-            else if (((latestEnd - earliestStart) > SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
-                    ((latestEnd - earliestStart) < SimulatedAnnealing.BREAK_CORRIDOR_MAXIMUM_LENGTH) &&
-                    ((end - start) > SimulatedAnnealing.SHIFT_CORRIDOR_MINIMUM_LENGTH) &&
-                    ((end - start) < SimulatedAnnealing.SHIFT_CORRIDOR_MAXIMUM_LENGTH)) {
+        if ((end > start) && (latestEnd > earliestStart)) {
+            if (((latestEnd - earliestStart) > 0) &&
+					((latestEnd - earliestStart) <= SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
+                    ((end - start) > SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH) &&
+                    ((end - start) <= SimulatedAnnealing.SHIFT_TIMINGS_MAXIMUM_LENGTH)) {
                 breakDuration = 1800;
             }
             else if (((latestEnd - earliestStart) > 0) &&
-                    ((latestEnd - earliestStart) < SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
-                    ((end - start) < SimulatedAnnealing.SHIFT_CORRIDOR_MINIMUM_LENGTH)) {
-                breakDuration = 0;
-            }
+					((latestEnd - earliestStart) <= SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
+					((end - start) > 0) &&
+					((end - start) <= SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH)) {
+				breakDuration = 0;
+			}
             else if (latestEnd.equals(earliestStart))
                 throw new NullPointerException(latestEnd + " " + earliestStart + "very small break corridor");
             saBreak = new SABreak(earliestStart, latestEnd, breakDuration);
+            decodedSAShift.setStartTime(start);
+			decodedSAShift.setEndTime(end);
+
             decodedSAShift.setSABreak(saBreak);
             decodedSAShift.setId(id);
         }
@@ -175,7 +173,7 @@ public class SAShift {
         double timeInterval = SimulatedAnnealing.TIME_INTERVAL;
         double startScheduleTime = SimulatedAnnealing.START_SCHEDULE_TIME;
         double endScheduleTime = SimulatedAnnealing.END_SCHEDULE_TIME;
-        for (double i = startScheduleTime; i <= endScheduleTime; i += timeInterval) {
+        for (double i = startScheduleTime; i < endScheduleTime; i += timeInterval) {
             encodedShift.put(i, 0.0);
         }
     }
