@@ -18,7 +18,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
+	public static final int SHIFT_TIMINGS_BUFFER = 60 * 60;
 	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
 	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
@@ -272,9 +272,14 @@ public class SimulatedAnnealing{
         individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //        double sum = 0;
 		Individual mutatedIndividual = individual.deepCopy();
-		for (int i = 0; i < random.nextInt(30); i++)
+		for (int i = 0; i < 1000; i++)
+			mutatedIndividual = Perturbation.insertSAShifts(mutatedIndividual);
+		for (int i = 0; i < 1000; i++)
+			mutatedIndividual = Perturbation.moveSABreakCorridor(mutatedIndividual);
+		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+		for (int i = 0; i < 1000; i++)
 			mutatedIndividual = perturb(mutatedIndividual);
-//		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 //		Individual mutatedIndividual2 = Perturbation.moveSAShiftTimings(mutatedIndividual);
 //		for (int i = 0; i < 100; i++)
 //			mutatedIndividual2 = perturb(mutatedIndividual2);
