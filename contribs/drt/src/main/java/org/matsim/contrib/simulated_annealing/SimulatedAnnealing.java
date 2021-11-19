@@ -83,7 +83,7 @@ public class SimulatedAnnealing{
 	public static final double DRIVER_COST_PER_HOUR = 30;
 
 	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_MAXIMUM = 100;
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
 	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 25, 25, 20, 20};*/
@@ -165,7 +165,7 @@ public class SimulatedAnnealing{
 	public static final double DRIVER_COST_PER_HOUR = 20;
 
 	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_MAXIMUM = 100;
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
 	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 25, 25, 20, 20};
@@ -249,7 +249,7 @@ public class SimulatedAnnealing{
 	public static final double DRIVER_COST_PER_HOUR = 10;
 
 	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 1000;
+	public static final int SHIFTS_MAXIMUM = 100;
 	public static final int SHIFTS_REMOVAL = 20;
 	public static final int SHIFTS_INSERTION = 20;
 	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 25, 25, 20, 20};
