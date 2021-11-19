@@ -46,7 +46,7 @@ public class Perturbation {
 				perturbedIndividual = insertSingleSAShift(perturbedIndividual);
 			}
 		}
-		log.info("insert new shift perturbation has been used");
+		log.info("insert new shifts perturbation has been used");
 		return perturbedIndividual;
 	}
 
@@ -74,7 +74,7 @@ public class Perturbation {
 				perturbedIndividual = removeSingleSAShift(perturbedIndividual);
 			}
 		}
-		log.info("remove random shift perturbation has been used");
+		log.info("remove random shifts perturbation has been used");
 		return perturbedIndividual;
 	}
 
@@ -259,7 +259,7 @@ public class Perturbation {
 			}
 		}
 		perturbedIndividual.setShifts(newSAShiftList);
-		log.info("increase shift timings size perturbation has been used");
+		log.info("increase shift timings perturbation has been used");
 		return perturbedIndividual;
 	}
 
@@ -295,7 +295,7 @@ public class Perturbation {
 			}
 		}
 		perturbedIndividual.setShifts(newSAShiftList);
-		log.info("decrease shift timings size perturbation has been used");
+		log.info("decrease shift timings perturbation has been used");
 		return perturbedIndividual;
 	}
 }

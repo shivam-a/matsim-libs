@@ -32,7 +32,7 @@ import java.util.Set;
 public class RunShiftOptimizerScenario {
 
 	private static final boolean infield = true;
-	private static final boolean rebalancing = true;
+	private static final boolean rebalancing = false;
 
 	public static void main(String[] args) {
 
