@@ -12,8 +12,6 @@ import java.util.*;
 public class SAShift {
 	private SABreak saBreak;
 	private Map<Double, Double> encodedShift;
-	private boolean started = false;
-	private boolean ended = false;
 	private Id<DrtShift> id;
 	private double start;
 	private double end;
@@ -55,25 +53,6 @@ public class SAShift {
 	public double getEndTime() {
 		return end;
 	}
-
-
-	public void start() {
-		if(!started) {
-			started = true;
-		} else {
-			throw new IllegalStateException("Shift already started!");
-		}
-	}
-
-
-	public void end() {
-		if(!ended) {
-			ended = true;
-		} else {
-			throw new IllegalStateException("Shift already ended!");
-		}
-	}
-
 
 	public String toString() {
 		return "Shift " + id.toString() + " ["+start+"-"+end+"]";
@@ -118,29 +97,30 @@ public class SAShift {
 		encodedShift = new LinkedHashMap<>();
 		initializeEncoding(encodedShift);
 		for (var entry: encodedShift.entrySet()) {
-			if (entry.getKey() >= start && entry.getKey() <= end) {
+			if (entry.getKey() > start && entry.getKey() <= end) {
 				encodedShift.put(entry.getKey(), 1.0);
 			}
 		}
 		List<Double> timeBins = new LinkedList<>(encodedShift.keySet());
 		for (double timeBin: timeBins) {
 			if (getSABreak() != null) {
-				if (timeBin >= getSABreak().getEarliestStart() && timeBin <= getSABreak().getLatestEnd())
+				if (timeBin > getSABreak().getEarliestStart() && timeBin <= getSABreak().getLatestEnd())
 					encodedShift.put(timeBin, 2.0);
 			}
 		}
 	}
 
-	public SAShift decodeShiftV2(SAShift encodedSAShift, Id<DrtShift> id) {
+	public SAShift decodeShiftV2() {
 		SAShift decodedSAShift = new SAShift();
 		SABreak saBreak;
-		Double start = encodedSAShift.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue() == 1.0).map(Map.Entry::getKey).findFirst().orElse(null);
-		Double end = encodedSAShift.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue().intValue() == 1.0).map(Map.Entry::getKey).reduce((__, last) -> last).orElse(null);
-		Double earliestStart = encodedSAShift.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue() == 2.0).map(Map.Entry::getKey).findFirst().orElse(null);
-		Double latestEnd = encodedSAShift.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue().intValue() == 2.0).map(Map.Entry::getKey).reduce((__, last) -> last).orElse(null);
+		Double start = this.getEncodedShift().entrySet().stream().filter(entry -> entry.getValue() == 1.0).map(Map.Entry::getKey).findFirst().orElse(null);
+		Double end = this.getEncodedShift().entrySet().stream().filter(entry -> entry.getValue().intValue() == 1.0).map(Map.Entry::getKey).reduce((__, last) -> last).orElse(null);
+		Double earliestStart = this.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue() == 2.0).map(Map.Entry::getKey).findFirst().orElse(null);
+		Double latestEnd = this.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue().intValue() == 2.0).map(Map.Entry::getKey).reduce((__, last) -> last).orElse(null);
 		double breakDuration = 0;
 		if (end != null && start != null && latestEnd != null && earliestStart != null) {
-			log.info(earliestStart + " " + latestEnd + " " + (latestEnd - earliestStart));
+			start = start - SimulatedAnnealing.TIME_INTERVAL;
+			earliestStart = earliestStart - SimulatedAnnealing.TIME_INTERVAL;
 			if ((end > start) && (latestEnd > earliestStart)) {
 				if (((latestEnd + SimulatedAnnealing.TIME_INTERVAL - earliestStart) > 0) &&
 						((latestEnd + SimulatedAnnealing.TIME_INTERVAL - earliestStart) <= SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
@@ -153,14 +133,12 @@ public class SAShift {
 						((end - start) <= SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH)) {
 					breakDuration = 0;
 				}
-
 			}
 			saBreak = new SABreak(earliestStart, latestEnd, breakDuration);
 			decodedSAShift.setStartTime(start);
 			decodedSAShift.setEndTime(end);
-
 			decodedSAShift.setSABreak(saBreak);
-			decodedSAShift.setId(id);
+			decodedSAShift.setId(this.getId());
 		}
 		else throw new NullPointerException("Shift is null");
 		return decodedSAShift;
@@ -177,18 +155,5 @@ public class SAShift {
 		for (double i = startScheduleTime; i < endScheduleTime; i += timeInterval) {
 			encodedShift.put(i, 0.0);
 		}
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		SAShift saShift = (SAShift) o;
-		return started == saShift.started && ended == saShift.ended && Double.compare(saShift.start, start) == 0 && Double.compare(saShift.end, end) == 0 && Objects.equals(saBreak, saShift.saBreak) && Objects.equals(encodedShift, saShift.encodedShift) && Objects.equals(id, saShift.id);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(saBreak, encodedShift, started, ended, id, start, end);
 	}
 }

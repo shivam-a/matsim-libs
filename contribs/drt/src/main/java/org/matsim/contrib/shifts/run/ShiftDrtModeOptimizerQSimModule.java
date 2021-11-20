@@ -53,7 +53,6 @@ import org.matsim.contrib.shifts.schedule.ShiftDrtTaskFactory;
 import org.matsim.contrib.shifts.schedule.ShiftDrtTaskFactoryImpl;
 import org.matsim.contrib.shifts.scheduler.ShiftDrtScheduleInquiry;
 import org.matsim.contrib.shifts.scheduler.ShiftTaskScheduler;
-import org.matsim.contrib.shifts.shift.DrtShiftUtils;
 import org.matsim.contrib.shifts.shift.DrtShifts;
 import org.matsim.contrib.simulated_annealing.ShiftOptimizer;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -113,7 +112,7 @@ public class ShiftDrtModeOptimizerQSimModule extends AbstractDvrpModeQSimModule 
 
 		bindModal(DrtShifts.class).toProvider(modalProvider(getter -> {
 			ShiftOptimizer shiftOptimizer = getter.get(ShiftOptimizer.class);
-			return shiftOptimizer.getBestSolution();
+			return shiftOptimizer.getCurrentSolution();
 		})).in(Singleton.class);
 
 		bindModal(DrtShiftDispatcher.class).toProvider(new ModalProviders.AbstractProvider<>(drtCfg.getMode(), DvrpModes::mode) {

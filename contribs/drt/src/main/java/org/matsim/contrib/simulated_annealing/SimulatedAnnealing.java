@@ -1,6 +1,9 @@
 package org.matsim.contrib.simulated_annealing;
 
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import org.matsim.contrib.shifts.io.DrtShiftsReader;
+import org.matsim.contrib.shifts.io.DrtShiftsWriter;
+import org.matsim.contrib.shifts.shift.DrtShiftsImpl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,7 +21,7 @@ public class SimulatedAnnealing{
 	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
 	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
 
-	public static final int SHIFT_TIMINGS_BUFFER = 60 * 60;
+	public static final int SHIFT_TIMINGS_BUFFER = 0;
 	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
 	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
 
@@ -258,8 +261,7 @@ public class SimulatedAnnealing{
 	public static final int ITERATIONS = 400;
 
 	public static Random random = new Random();
-	public static PerturbationType perturbationType = PerturbationType.WEIGHTED_PERTURB_V2;
-
+	public static PerturbationType perturbationType = PerturbationType.MOVE_BREAK_CORRIDOR;
 
     public static void main(String[] args) {
         ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
@@ -270,16 +272,12 @@ public class SimulatedAnnealing{
 //			e.printStackTrace();
 //		}
         individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-//        double sum = 0;
 		Individual mutatedIndividual = individual.deepCopy();
-		for (int i = 0; i < 1000; i++)
-			mutatedIndividual = Perturbation.insertSAShifts(mutatedIndividual);
-		for (int i = 0; i < 1000; i++)
-			mutatedIndividual = Perturbation.moveSABreakCorridor(mutatedIndividual);
+		for (int i = 0; i < 100; i++)
+			perturb(mutatedIndividual);
 		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-		for (int i = 0; i < 1000; i++)
-			mutatedIndividual = perturb(mutatedIndividual);
-		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+		DrtShiftsWriter drtShiftsWriter = new DrtShiftsWriter(ShiftOptimizer.getDrtShiftsFromIndividual(individual));
+		drtShiftsWriter.writeFile("examples/scenarios/holzkirchen/SAShifts.xml");
 //		Individual mutatedIndividual2 = Perturbation.moveSAShiftTimings(mutatedIndividual);
 //		for (int i = 0; i < 100; i++)
 //			mutatedIndividual2 = perturb(mutatedIndividual2);
@@ -341,83 +339,72 @@ public class SimulatedAnnealing{
 		System.out.println(model.calculateAdjustedRSquared());
 	}
 
-    public static Individual perturb(Individual individual) {
+    public static void perturb(Individual individual) {
         if (perturbationType == PerturbationType.MOVE_BREAK_CORRIDOR) {
-            return Perturbation.moveSABreakCorridor(individual);
+             Perturbation.moveSABreakCorridor(individual);
         }
         else if (perturbationType == PerturbationType.INSERT_SHIFT) {
 
-            return Perturbation.insertSAShifts(individual);
+             Perturbation.insertSAShifts(individual);
         }
         else if (perturbationType == PerturbationType.MOVE_SHIFT_TIMINGS) {
 
-            return Perturbation.moveSAShiftTimings(individual);
+             Perturbation.moveSAShiftTimings(individual);
         }
         else if (perturbationType == PerturbationType.REMOVE_SHIFT) {
 
-            return Perturbation.removeSAShifts(individual);
+             Perturbation.removeSAShifts(individual);
         }
         else if (perturbationType == PerturbationType.INCREASE_SHIFT_TIMINGS) {
 
-            return Perturbation.increaseSAShiftTimings(individual);
+             Perturbation.increaseSAShiftTimings(individual);
         }
         else if (perturbationType == PerturbationType.DECREASE_SHIFT_TIMINGS) {
 
-            return Perturbation.decreaseSAShiftTimings(individual);
+             Perturbation.decreaseSAShiftTimings(individual);
         }
         else if (perturbationType == PerturbationType.RANDOM_PERTURB) {
             int num = random.nextInt(8);
             switch(num) {
                 case 0:
-                    return Perturbation.removeSAShifts(individual);
+                     Perturbation.removeSAShifts(individual);
                 case 1:
-                    return Perturbation.moveSABreakCorridor(individual);
+                     Perturbation.moveSABreakCorridor(individual);
                 case 2:
-                    return Perturbation.moveSAShiftTimings(individual);
+                     Perturbation.moveSAShiftTimings(individual);
                 case 3:
-                    return Perturbation.insertSAShifts(individual);
+                     Perturbation.insertSAShifts(individual);
                 case 4:
-                    return Perturbation.increaseSAShiftTimings(individual);
+                     Perturbation.increaseSAShiftTimings(individual);
                 case 5:
-                    return Perturbation.decreaseSAShiftTimings(individual);
+                     Perturbation.decreaseSAShiftTimings(individual);
             }
         }
-        else if (perturbationType == PerturbationType.WEIGHTED_PERTURB) {
-			RandomCollection<Object> rc = new RandomCollection<>()
-					.add(PERTURBATION_WEIGHTAGE[0], Perturbation.insertSAShifts(individual))
-					.add(PERTURBATION_WEIGHTAGE[1], Perturbation.removeSAShifts(individual))
-					.add(PERTURBATION_WEIGHTAGE[2], Perturbation.moveSABreakCorridor(individual))
-					.add(PERTURBATION_WEIGHTAGE[3], Perturbation.moveSAShiftTimings(individual))
-					.add(PERTURBATION_WEIGHTAGE[4], Perturbation.increaseSAShiftTimings(individual))
-					.add(PERTURBATION_WEIGHTAGE[5], Perturbation.decreaseSAShiftTimings(individual));
-			return (Individual) rc.next();
-		}
 		else if (perturbationType == PerturbationType.WEIGHTED_PERTURB_V2) {
 			int num = random.nextInt(100);
 			if (num <= PERTURBATION_WEIGHTAGE[0]) {
-				return Perturbation.removeSAShifts(individual);
+				Perturbation.removeSAShifts(individual);
 			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1])) {
-				return Perturbation.insertSAShifts(individual);
+				Perturbation.insertSAShifts(individual);
 			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1] + PERTURBATION_WEIGHTAGE[2])) {
-				return Perturbation.moveSABreakCorridor(individual);
+				Perturbation.moveSABreakCorridor(individual);
 			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1] + PERTURBATION_WEIGHTAGE[2] + PERTURBATION_WEIGHTAGE[3])) {
-				return Perturbation.moveSAShiftTimings(individual);
+				Perturbation.moveSAShiftTimings(individual);
 			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1] + PERTURBATION_WEIGHTAGE[2] + PERTURBATION_WEIGHTAGE[3] + PERTURBATION_WEIGHTAGE[4])) {
-				return Perturbation.increaseSAShiftTimings(individual);
+				Perturbation.increaseSAShiftTimings(individual);
 			} else {
-				return Perturbation.decreaseSAShiftTimings(individual);
+				Perturbation.decreaseSAShiftTimings(individual);
 			}
 		}
-        return individual;
     }
 
     public static double acceptanceProbability(double currentCost, double newCost, double temperature) {
         // If the new solution is better, accept it
         if (newCost < currentCost) {
-            return 1.0;
+            return  1.0;
         }
         // If the new solution is worse, calculate an acceptance probability
-        return Math.exp((currentCost - newCost) / temperature);
+         return Math.exp((currentCost - newCost) / temperature);
     }
 
     public static String printMap(Map<Double, Double> map) {
@@ -425,7 +412,6 @@ public class SimulatedAnnealing{
         for (var entry : map.entrySet()) {
             stringBuilder.append(entry.getValue().intValue()).append("");
         }
-//        stringBuilder.append("\n");
         return stringBuilder.toString();
     }
 
@@ -482,36 +468,8 @@ public class SimulatedAnnealing{
 		MOVE_SHIFT_TIMINGS,
         INCREASE_SHIFT_TIMINGS,
         DECREASE_SHIFT_TIMINGS,
-        INCREASE_BREAK_CORRIDOR,
-        DECREASE_BREAK_CORRIDOR,
         RANDOM_PERTURB,
-        WEIGHTED_PERTURB,
 		WEIGHTED_PERTURB_V2;
 	}
 }
 
-class RandomCollection<E> {
-	private final NavigableMap<Double, E> map = new TreeMap<Double, E>();
-	private final Random random;
-	private double total = 0;
-
-	public RandomCollection() {
-		this(new Random());
-	}
-
-	public RandomCollection(Random random) {
-		this.random = random;
-	}
-
-	public RandomCollection<E> add(double weight, E result) {
-		if (weight <= 0) return this;
-		total += weight;
-		map.put(total, result);
-		return this;
-	}
-
-	public E next() {
-		double value = random.nextDouble() * total;
-		return map.higherEntry(value).getValue();
-	}
-}

@@ -38,15 +38,15 @@ public class MultiModeShiftDrtModule extends AbstractModule {
 					ShiftTaskScheduler.RELOCATE_VEHICLE_SHIFT_CHANGEOVER_TASK_TYPE)));
         }
 
-        bind(ShiftDurationXY.class);
-        bind(BreakCorridorXY.class);
-        addEventHandlerBinding().to(ShiftDurationXY.class);
-        addEventHandlerBinding().to(BreakCorridorXY.class);
-        addControlerListenerBinding().to(ShiftAnalysisControlerListener.class);
-
-        bind(ShiftHistogram.class);
-        addControlerListenerBinding().to(ShiftHistogramListener.class);
-        addEventHandlerBinding().to(ShiftHistogram.class);
+//        bind(ShiftDurationXY.class);
+//        bind(BreakCorridorXY.class);
+//        addEventHandlerBinding().to(ShiftDurationXY.class);
+//        addEventHandlerBinding().to(BreakCorridorXY.class);
+//        addControlerListenerBinding().to(ShiftAnalysisControlerListener.class);
+//
+//        bind(ShiftHistogram.class);
+//        addControlerListenerBinding().to(ShiftHistogramListener.class);
+//        addEventHandlerBinding().to(ShiftHistogram.class);
 
         installQSimModule(new AbstractQSimModule() {
             @Override
