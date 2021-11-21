@@ -3,6 +3,7 @@ package org.matsim.contrib.simulated_annealing;
 import com.google.inject.Inject;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.contrib.shifts.run.RunShiftOptimizerScenario;
 import org.matsim.contrib.shifts.shift.*;
 import org.matsim.core.config.groups.ControlerConfigGroup;
 import org.matsim.core.controler.events.IterationEndsEvent;
@@ -21,20 +22,20 @@ public class ShiftOptimizer implements IterationEndsListener {
     private final DrtShifts initialSolution;
     private DrtShifts currentSolution;
     private DrtShifts acceptedSolution;
-	private double temp = SimulatedAnnealing.INITIAL_TEMPERATURE;
+	private double temp = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INITIAL_TEMPERATURE"));
 	public double currentIndividualCost = Double.POSITIVE_INFINITY;
-    public double acceptedIndividualcost = Double.POSITIVE_INFINITY;
-    public DrtShifts getAcceptedSolution() {
-        return acceptedSolution;
-    }
+    public double acceptedIndividualCost = Double.POSITIVE_INFINITY;
 
-    @Inject
+	@Inject
     public ShiftOptimizer(Scenario scenario, RejectionTracker rejectionTracker) {
         this.initialSolution = DrtShiftUtils.getOrCreateShifts(scenario);
         this.currentSolution = initialSolution;
         this.acceptedSolution = currentSolution;
         this.rejectionTracker = rejectionTracker;
-		initializeCSV();
+		initializeCurrentSolutionCSV();
+		initializeAcceptedSolutionCSV();
+		initializeSubmittedRequestsCSV();
+		initializeActiveShiftsPerHourCSV();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		Map.Entry<Double, Double> maximumRejectionRateAndTime = rejectionRates.entrySet().stream().max(Comparator.comparingDouble(Map.Entry::getValue)).get();
 		log.info("Maximum rejection rate at " + maximumRejectionRateAndTime.getKey() + " : " + maximumRejectionRateAndTime.getValue());
         //optimization
-        temp = SimulatedAnnealing.INITIAL_TEMPERATURE / (iterationEndsEvent.getIteration() + 1);
+        temp = SimulatedAnnealing.coolingTemperature(iterationEndsEvent.getIteration(), Double.parseDouble(RunShiftOptimizerScenario.configMap.get("ALPHA")));
         Individual currentIndividual = getIndividualFromDrtShifts(currentSolution);
         Individual acceptedIndividual = getIndividualFromDrtShifts(acceptedSolution);
         if (initialSolution == null)
@@ -58,20 +59,23 @@ public class ShiftOptimizer implements IterationEndsListener {
 			log.info(String.format("The current Shift Solution Cost for iteration %d: %f",
 					iterationEndsEvent.getIteration(), currentIndividualCost));
 			log.info(String.format("The accepted Shift Solution Cost for iteration %d: %f",
-					iterationEndsEvent.getIteration(), acceptedIndividualcost));
+					iterationEndsEvent.getIteration(), acceptedIndividualCost));
 			log.info("Number of shifts for current solution: " + currentSolution.getShifts().size());
 			log.info("Number of shifts for accepted solution: " + acceptedSolution.getShifts().size());
 			log.info("Temperature: " + temp);
-			writeShiftOutput(iterationEndsEvent.getIteration(), rejectionRates, rejections, submitted, acceptedIndividual, maximumRejectionRateAndTime, currentIndividual);
-			double acceptanceProbability = SimulatedAnnealing.acceptanceProbability(acceptedIndividualcost, currentIndividualCost, temp);
+			writeCurrentSolutionOutput(iterationEndsEvent.getIteration(), rejectionRates, rejections, submitted, maximumRejectionRateAndTime, currentIndividual);
+			writeSubmittedRequestsPerHourCSV(iterationEndsEvent.getIteration(), submitted);
+			writeActiveShiftsPerHourCSV(iterationEndsEvent.getIteration(), SimulatedAnnealing.activeShiftsPerHour(acceptedIndividual));
+			double acceptanceProbability = SimulatedAnnealing.acceptanceProbability(acceptedIndividualCost, currentIndividualCost, temp);
 			log.info(String.format("The acceptance probability: %f", acceptanceProbability));
 			if (acceptanceProbability > SimulatedAnnealing.random.nextDouble()) {
 				acceptedIndividual = currentIndividual;
 				acceptedSolution = getDrtShiftsFromIndividual(acceptedIndividual);
-				acceptedIndividualcost = currentIndividualCost;
+				acceptedIndividualCost = currentIndividualCost;
 				log.info("The new solution was accepted");
 			}
 			else log.info("The new solution was rejected");
+			writeAcceptedSolutionOutput(iterationEndsEvent.getIteration(), rejectionRates, rejections, submitted, maximumRejectionRateAndTime, acceptedIndividual);
 			int numberOfPerturbations = SimulatedAnnealing.random.nextInt(currentIndividual.getShifts().size());
 			currentIndividual = acceptedIndividual.deepCopy();
 			for (int i = 0; i < numberOfPerturbations; i++) {
@@ -79,28 +83,25 @@ public class ShiftOptimizer implements IterationEndsListener {
 			}
 			currentSolution = getDrtShiftsFromIndividual(currentIndividual);
         }
-        getIndividualFromDrtShifts(acceptedSolution).getShifts().forEach(shift -> log.info(SimulatedAnnealing.printMap(shift.getEncodedShift())));
+        getIndividualFromDrtShifts(acceptedSolution).getShifts().forEach(shift -> log.info(SimulatedAnnealing.joinMapValues(shift.getEncodedShift(), "")));
 		Perturbation.notifyIterationEnds();
 		Perturbation.setIteration(iterationEndsEvent.getIteration());
 	}
 
-	private void writeShiftOutput(int iteration, Map<Double, Double> rejectionRates, Map<Double, Double> rejections, Map<Double, Double> submitted, Individual acceptedIndividual, Map.Entry<Double, Double> maximumRejectionRateAndTime, Individual currentIndividual) {
+	private void writeCurrentSolutionOutput(int iteration, Map<Double, Double> rejectionRates, Map<Double, Double> rejections, Map<Double, Double> submitted, Map.Entry<Double, Double> maximumRejectionRateAndTime, Individual currentIndividual) {
 		FileWriter csvwriter;
 		BufferedWriter bufferedWriter = null;
 		try {
-			csvwriter = new FileWriter("test/output/holzkirchen_shifts/shift_log.csv", true);
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/current_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringJoiner stringJoiner = new StringJoiner(",");
 			stringJoiner.add(String.valueOf(iteration))
 					.add(String.valueOf(currentSolution.getShifts().size()))
-					.add(String.valueOf(acceptedSolution.getShifts().size()))
 					.add(String.valueOf(SimulatedAnnealing.getSumOfValues(submitted)))
 					.add(String.valueOf(SimulatedAnnealing.getSumOfValues(rejections)))
 					.add(String.valueOf(SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size()))
 					.add(String.valueOf(maximumRejectionRateAndTime.getValue()))
-					.add(String.valueOf(SimulatedAnnealing.eachShiftDriverHour(acceptedIndividual)))
-					.add(String.valueOf(SimulatedAnnealing.eachShiftDriverHour(currentIndividual)))
-					.add(String.valueOf(acceptedIndividualcost))
+					.add(String.valueOf(SimulatedAnnealing.totalDriverHours(currentIndividual)))
 					.add(String.valueOf(currentIndividualCost))
 					.add(String.valueOf(temp));
 			bufferedWriter.write(stringJoiner.toString());
@@ -121,23 +122,110 @@ public class ShiftOptimizer implements IterationEndsListener {
 			}
 		}
 	}
-	public static void initializeCSV() {
+
+	private void writeAcceptedSolutionOutput(int iteration, Map<Double, Double> rejectionRates, Map<Double, Double> rejections, Map<Double, Double> submitted, Map.Entry<Double, Double> maximumRejectionRateAndTime, Individual acceptedIndividual) {
 		FileWriter csvwriter;
 		BufferedWriter bufferedWriter = null;
 		try {
-			csvwriter = new FileWriter("test/output/holzkirchen_shifts/shift_log.csv", true);
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/accepted_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add(String.valueOf(iteration))
+					.add(String.valueOf(acceptedSolution.getShifts().size()))
+					.add(String.valueOf(SimulatedAnnealing.getSumOfValues(submitted)))
+					.add(String.valueOf(SimulatedAnnealing.getSumOfValues(rejections)))
+					.add(String.valueOf(SimulatedAnnealing.getSumOfValues(rejectionRates) / rejectionRates.size()))
+					.add(String.valueOf(maximumRejectionRateAndTime.getValue()))
+					.add(String.valueOf(SimulatedAnnealing.totalDriverHours(acceptedIndividual)))
+					.add(String.valueOf(acceptedIndividualCost))
+					.add(String.valueOf(temp));
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void writeActiveShiftsPerHourCSV(int iteration, Map<Double, Double> activeShiftsPerHour) {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/active_shifts_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add(String.valueOf(iteration))
+					.add(SimulatedAnnealing.joinMapValues(activeShiftsPerHour, ","));
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private void writeSubmittedRequestsPerHourCSV(int iteration, Map<Double, Double> submitted) {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/submitted_requests_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add(String.valueOf(iteration))
+					.add(SimulatedAnnealing.joinMapValues(submitted, ","));
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	public static void initializeCurrentSolutionCSV() {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/current_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringJoiner stringJoiner = new StringJoiner(",");
 			stringJoiner.add("iteration")
 					.add("current_shift_size")
-					.add("accepted_shift_size")
 					.add("current_submitted")
 					.add("current_rejected")
 					.add("current_average_rejection_rate")
 					.add("current_max_rejection_rate")
-					.add("accepted_driver_hours")
 					.add("current_driver_hours")
-					.add("accepted_cost")
 					.add("current_cost")
 					.add("temperature");
 			bufferedWriter.write(stringJoiner.toString());
@@ -158,6 +246,106 @@ public class ShiftOptimizer implements IterationEndsListener {
 			}
 		}
 	}
+
+	public static void initializeAcceptedSolutionCSV() {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/accepted_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add("iteration")
+					.add("accepted_shift_size")
+					.add("accepted_submitted")
+					.add("accepted_rejected")
+					.add("accepted_average_rejection_rate")
+					.add("accepted_max_rejection_rate")
+					.add("accepted_driver_hours")
+					.add("accepted_cost")
+					.add("temperature");
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void initializeSubmittedRequestsCSV() {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/submitted_requests_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringBuilder stringBuilder = new StringBuilder();
+			for (int i = 0; i < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")) / 3600; i++) {
+				stringBuilder.append(i).append(",");
+			}
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add("iteration")
+					.add(stringBuilder);
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void initializeActiveShiftsPerHourCSV() {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/conifg%s/active_shifts_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringJoiner stringJoiner = new StringJoiner(",");
+			StringBuilder stringBuilder = new StringBuilder();
+			for (int i = 0; i < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")) / 3600; i++) {
+				stringBuilder.append(i).append(",");
+			}
+			stringJoiner.add("iteration")
+					.add(stringBuilder);
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public static Individual getIndividualFromDrtShifts(DrtShifts drtShifts) {
         Individual solution = new Individual();
         List<SAShift> saShiftList = new LinkedList<>();
@@ -179,9 +367,6 @@ public class ShiftOptimizer implements IterationEndsListener {
         DrtShifts solution = new DrtShiftsImpl();
         DefautShiftBreakImpl shiftBreak;
         for (var shift: individual.getShifts()) {
-        	log.info(shift.getStartTime() + " " + shift.getEndTime());
-			log.info(shift.getSABreak().getEarliestStart() + " " + shift.getSABreak().getLatestEnd() + " " + (shift.getSABreak().getLatestEnd() - shift.getSABreak().getEarliestStart()));
-			log.info(shift.getSABreak().getDuration());
             SAShift decodedSAShift = shift.decodeShiftV2();
             DrtShift drtShift = new DrtShiftImpl(decodedSAShift.getId());
             if (decodedSAShift.getSABreak() != null)

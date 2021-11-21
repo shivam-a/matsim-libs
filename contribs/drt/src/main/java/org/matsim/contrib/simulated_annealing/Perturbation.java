@@ -2,6 +2,7 @@ package org.matsim.contrib.simulated_annealing;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.shifts.run.RunShiftOptimizerScenario;
 import org.matsim.contrib.shifts.shift.DrtShift;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Random;
  * Used for changing/modifying the Individuals SupplySchedule/DriverShift.
  */
 public class Perturbation {
-	static Random random = SimulatedAnnealing.random;
+	static Random random = new Random();
 	private static final Logger log = Logger.getLogger(Perturbation.class);
 	private static int counter = 0;
 	private static int iteration;
@@ -44,8 +45,8 @@ public class Perturbation {
 	}
 
 	public static void insertSAShifts (Individual individual) {
-		if (individual.getShifts().size() < SimulatedAnnealing.SHIFTS_MAXIMUM) {
-			for (int i = 0; i < random.nextInt(SimulatedAnnealing.SHIFTS_INSERTION); i++) {
+		if (individual.getShifts().size() < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MAXIMUM"))) {
+			for (int i = 0; i < random.nextInt((int) Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_INSERTION"))); i++) {
 				insertSingleSAShift(individual);
 			}
 		}
@@ -59,14 +60,14 @@ public class Perturbation {
 	 */
 	static protected void removeSingleSAShift(Individual individual) {
 		List<SAShift> newSAShiftList = individual.getShifts();
-		if (newSAShiftList.size() > SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (newSAShiftList.size() > Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			newSAShiftList.remove(random.nextInt(newSAShiftList.size()));
 		}
 	}
 
 	public static void removeSAShifts (Individual individual) {
-		if (individual.getShifts().size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
-			for (int i = 0; i < random.nextInt(SimulatedAnnealing.SHIFTS_REMOVAL); i++) {
+		if (individual.getShifts().size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
+			for (int i = 0; i < random.nextInt((int) Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_REMOVAL"))); i++) {
 				removeSingleSAShift(individual);
 			}
 		}
@@ -77,7 +78,7 @@ public class Perturbation {
 		List<SAShift> shiftList = new ArrayList<>(individual.getShifts());
 		int numberOfShiftsToBePerturbed = random.nextInt(individual.getShifts().size());
 		Collections.shuffle(shiftList, random);
-		if (shiftList.size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (shiftList.size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			for (int i = 0; i < numberOfShiftsToBePerturbed; i++) {
 				SAShift shift = shiftList.remove(0);
 				moveSAShiftTimings(shift);
@@ -92,10 +93,10 @@ public class Perturbation {
 		double newEnd = shift.getEndTime();
 		double newEarliestStart = shift.getSABreak().getEarliestStart();
 		double newLatestEnd = shift.getSABreak().getLatestEnd();
-		double movableDistanceSize = (SimulatedAnnealing.END_SCHEDULE_TIME - SimulatedAnnealing.START_SCHEDULE_TIME + SimulatedAnnealing.TIME_INTERVAL) - (newEnd - newStart) - (2 * SimulatedAnnealing.SHIFT_TIMINGS_BUFFER);
-		if ((movableDistanceSize / SimulatedAnnealing.TIME_INTERVAL) > 1) {
-			moveAhead = random.nextInt((int) (movableDistanceSize / SimulatedAnnealing.TIME_INTERVAL) - 1);
-			newStart = moveAhead * SimulatedAnnealing.TIME_INTERVAL + SimulatedAnnealing.SHIFT_TIMINGS_BUFFER;
+		double movableDistanceSize = (Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")) - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME")) + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"))) - (newEnd - newStart) - (2 * Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER")));
+		if ((movableDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"))) > 1) {
+			moveAhead = random.nextInt((int) (movableDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"))) - 1);
+			newStart = moveAhead * Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER"));
 			newEnd = shift.getEndTime() - shift.getStartTime() + newStart;
 			newEarliestStart = newStart + shift.getSABreak().getEarliestStart() - shift.getStartTime();
 			newLatestEnd = newEarliestStart + (shift.getSABreak().getLatestEnd() - shift.getSABreak().getEarliestStart());
@@ -110,7 +111,7 @@ public class Perturbation {
 		List<SAShift> shiftList = new ArrayList<>(individual.getShifts());
 		int numberOfShiftsToBePerturbed = random.nextInt(individual.getShifts().size());
 		Collections.shuffle(shiftList, random);
-		if (shiftList.size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (shiftList.size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			for (int i = 0; i < numberOfShiftsToBePerturbed; i++) {
 				SAShift shift = shiftList.remove(0);
 				moveSABreakCorridor(shift);
@@ -120,12 +121,12 @@ public class Perturbation {
 	}
 
 	private static void moveSABreakCorridor(SAShift shift) {
-		double movableDistanceSize = (shift.getEndTime() - shift.getStartTime()) - (2 * SimulatedAnnealing.BREAK_CORRIDOR_BUFFER);
+		double movableDistanceSize = (shift.getEndTime() - shift.getStartTime()) - (2 * Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_BUFFER")));
 		// find any value in between the movableDistanceSize and increment all values
 		double newEarliestStart = shift.getSABreak().getEarliestStart(), newLatestEnd = shift.getSABreak().getLatestEnd(), moveAhead;
-		if ((movableDistanceSize / SimulatedAnnealing.TIME_INTERVAL) > 1) {
-			moveAhead = random.nextInt((int) (movableDistanceSize / SimulatedAnnealing.TIME_INTERVAL) - 1);
-			newEarliestStart = shift.getStartTime() + SimulatedAnnealing.BREAK_CORRIDOR_BUFFER + moveAhead * SimulatedAnnealing.TIME_INTERVAL;
+		if ((movableDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"))) > 1) {
+			moveAhead = random.nextInt((int) (movableDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"))) - 1);
+			newEarliestStart = shift.getStartTime() + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_BUFFER")) + moveAhead * Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
 			newLatestEnd = newEarliestStart + (shift.getSABreak().getLatestEnd() - shift.getSABreak().getEarliestStart());
 		}
 		SABreak newSABreak = new SABreak(newEarliestStart, newLatestEnd, shift.getSABreak().getDuration());
@@ -138,7 +139,7 @@ public class Perturbation {
 		List<SAShift> shiftList = new ArrayList<>(individual.getShifts());
 		int numberOfShiftsToBePerturbed = random.nextInt(individual.getShifts().size());
 		Collections.shuffle(shiftList, random);
-		if (shiftList.size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (shiftList.size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			for (int i = 0; i < numberOfShiftsToBePerturbed; i++) {
 				SAShift shift = shiftList.remove(0);
 				increaseSAShiftTimings(shift);
@@ -149,16 +150,16 @@ public class Perturbation {
 
 	private static void increaseSAShiftTimings(SAShift shift) {
 		// difference between the end of schedule and end of shift
-		double additionalEndDistanceSize = SimulatedAnnealing.END_SCHEDULE_TIME - SimulatedAnnealing.SHIFT_TIMINGS_BUFFER - shift.getEndTime() ;
-		double additionalStartDistanceSize = shift.getStartTime() - SimulatedAnnealing.START_SCHEDULE_TIME + SimulatedAnnealing.SHIFT_TIMINGS_BUFFER;
+		double additionalEndDistanceSize = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")) - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER")) - shift.getEndTime() ;
+		double additionalStartDistanceSize = shift.getStartTime() - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME")) + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER"));
 		// find any value in between the movableDistanceSize and increment all values
 		double newStart = shift.getStartTime();
 		double newEnd = shift.getEndTime();
-		if ((newEnd - newStart) < SimulatedAnnealing.SHIFT_TIMINGS_MAXIMUM_LENGTH) {
-			if (additionalEndDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.SHIFT_TIMINGS_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-				newEnd = newStart + (shift.getEndTime() - shift.getStartTime()) + SimulatedAnnealing.TIME_INTERVAL;
-			} else if (additionalStartDistanceSize / SimulatedAnnealing.TIME_INTERVAL >= (SimulatedAnnealing.SHIFT_TIMINGS_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-				newStart = newStart - SimulatedAnnealing.TIME_INTERVAL;
+		if ((newEnd - newStart) < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_MAXIMUM_LENGTH"))) {
+			if (additionalEndDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) > (Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER")) / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")))) {
+				newEnd = newStart + (shift.getEndTime() - shift.getStartTime()) + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
+			} else if (additionalStartDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) >= (Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER")) / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")))) {
+				newStart = newStart - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
 			}
 		}
 		SABreak newSABreak = new SABreak(shift.getSABreak().getEarliestStart(), shift.getSABreak().getLatestEnd(), shift.getSABreak().getDuration());
@@ -172,7 +173,7 @@ public class Perturbation {
 		List<SAShift> shiftList = new ArrayList<>(individual.getShifts());
 		int numberOfShiftsToBePerturbed = random.nextInt(individual.getShifts().size());
 		Collections.shuffle(shiftList, random);
-		if (shiftList.size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (shiftList.size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			for (int i = 0; i < numberOfShiftsToBePerturbed; i++) {
 				SAShift shift = shiftList.remove(0);
 				decreaseSAShiftTimings(shift);
@@ -186,10 +187,15 @@ public class Perturbation {
 		double newEnd = shift.getEndTime();
 		double newLatestEnd = shift.getSABreak().getLatestEnd();
 		double newEarliestStart = shift.getSABreak().getEarliestStart();
-		if (((newEnd - SimulatedAnnealing.TIME_INTERVAL - newStart) > SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH) && ((newEnd - SimulatedAnnealing.TIME_INTERVAL - newLatestEnd) > SimulatedAnnealing.BREAK_CORRIDOR_BUFFER)) {
-			newEnd = newStart + (shift.getEndTime() - shift.getStartTime()) - SimulatedAnnealing.TIME_INTERVAL;
-		} else if (((newEnd - SimulatedAnnealing.TIME_INTERVAL - newStart) > SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH) && ((newEarliestStart - SimulatedAnnealing.TIME_INTERVAL - newStart) > SimulatedAnnealing.BREAK_CORRIDOR_BUFFER)) {
-			newStart = newStart + SimulatedAnnealing.TIME_INTERVAL;
+		boolean minimumShift = (newEnd - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) - newStart) > Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_MINIMUM_LENGTH"));
+		boolean endSideBuffer = (newEnd - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) - newLatestEnd) > Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_BUFFER"));
+		boolean startSideBuffer = (newEarliestStart - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) - newStart) > Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_BUFFER"));
+		if (minimumShift && endSideBuffer) {
+			newEnd = newStart + (shift.getEndTime() - shift.getStartTime()) - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
+		} else {
+			if (minimumShift && startSideBuffer) {
+				newStart = newStart + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
+			}
 		}
 		SABreak newSABreak = new SABreak(shift.getSABreak().getEarliestStart(), shift.getSABreak().getLatestEnd(), shift.getSABreak().getDuration());
 		shift.setStartTime(newStart);
@@ -209,7 +215,7 @@ public class Perturbation {
 	/*public static Individual increaseSABreakCorridor(Individual individual) {
 		Individual perturbedIndividual = individual;
 		List<SAShift> newSAShiftList = perturbedIndividual.getShifts();
-		if (perturbedIndividual.getShifts().size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (perturbedIndividual.getShifts().size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -224,11 +230,11 @@ public class Perturbation {
 					double additionalStartDistanceSize = oldSAShift.getSABreak().getEarliestStart() - oldSAShift.getStartTime();
 					// find any value in between the movableDistanceSize and increment all values
 					double newEarliestStart = oldSAShift.getSABreak().getEarliestStart(), newLatestEnd = oldSAShift.getSABreak().getLatestEnd();
-					if ((newLatestEnd - newEarliestStart) < SimulatedAnnealing.BREAK_CORRIDOR_MAXIMUM_LENGTH) {
-						if (additionalEndDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.BREAK_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-							newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) + SimulatedAnnealing.TIME_INTERVAL;
-						} else if (additionalStartDistanceSize / SimulatedAnnealing.TIME_INTERVAL > (SimulatedAnnealing.BREAK_CORRIDOR_BUFFER / SimulatedAnnealing.TIME_INTERVAL)) {
-							newEarliestStart = newEarliestStart - SimulatedAnnealing.TIME_INTERVAL;
+					if ((newLatestEnd - newEarliestStart) < RunShiftOptimizerScenario.configMap.get.BREAK_CORRIDOR_MAXIMUM_LENGTH) {
+						if (additionalEndDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) > (Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_BUFFER")) / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")))) {
+							newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
+						} else if (additionalStartDistanceSize / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) > (Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_BUFFER")) / Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")))) {
+							newEarliestStart = newEarliestStart - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
 						}
 					}
 					SABreak newSABreak = new SABreak(newEarliestStart, newLatestEnd, oldSAShift.getSABreak().getDuration());
@@ -247,7 +253,7 @@ public class Perturbation {
 	/*public static Individual decreaseSABreakCorridor(Individual individual) {
 		Individual perturbedIndividual = individual;
 		List<SAShift> newSAShiftList = perturbedIndividual.getShifts();
-		if (perturbedIndividual.getShifts().size() >= SimulatedAnnealing.SHIFTS_MINIMUM) {
+		if (perturbedIndividual.getShifts().size() >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"))) {
 			newSAShiftList.clear();
 			int smallIndex = random.nextInt(perturbedIndividual.getShifts().size() - 1);
 			int largeIndex = 0;
@@ -260,8 +266,8 @@ public class Perturbation {
 					// difference between the end of schedule and end of shift
 					// find any value in between the movableDistanceSize and increment all values
 					double newEarliestStart = oldSAShift.getSABreak().getEarliestStart(), newLatestEnd = oldSAShift.getSABreak().getLatestEnd();
-					if ((newLatestEnd - newEarliestStart) >= SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) {
-						newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) - SimulatedAnnealing.TIME_INTERVAL;
+					if ((newLatestEnd - newEarliestStart) >= RunShiftOptimizerScenario.configMap.get.BREAK_CORRIDOR_MINIMUM_LENGTH) {
+						newLatestEnd = newEarliestStart + (oldSAShift.getSABreak().getLatestEnd() - oldSAShift.getSABreak().getEarliestStart()) - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
 					}
 					SABreak newSABreak = new SABreak(newEarliestStart, newLatestEnd, oldSAShift.getSABreak().getDuration());
 					newSAShift = new SAShift(oldSAShift.getId(), oldSAShift.getStartTime(), oldSAShift.getEndTime());

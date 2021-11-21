@@ -1,308 +1,31 @@
 package org.matsim.contrib.simulated_annealing;
 
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.matsim.contrib.shifts.io.DrtShiftsReader;
-import org.matsim.contrib.shifts.io.DrtShiftsWriter;
-import org.matsim.contrib.shifts.shift.DrtShiftsImpl;
+import org.matsim.contrib.shifts.run.RunShiftOptimizerScenario;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.*;
 
 public class SimulatedAnnealing{
-	// configuration 1
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 10;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 30;
-
-	public static final int SHIFTS_MINIMUM = 15;
-	public static final int SHIFTS_MAXIMUM = 45;
-	public static final int SHIFTS_REMOVAL = 2;
-	public static final int SHIFTS_INSERTION = 2;
-	public static final int[] PERTURBATION_WEIGHTAGE = {10, 10, 25, 25, 15, 15};
-
-	/* // configuration 2
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 10;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 30;
-
-	public static final int SHIFTS_MINIMUM = 1;
-	public static final int SHIFTS_MAXIMUM = 1000;
-	public static final int SHIFTS_REMOVAL = 10;
-	public static final int SHIFTS_INSERTION = 10;
-	public static final int[] PERTURBATION_WEIGHTAGE = {10, 10, 25, 25, 15, 15};*/
-
-	/*// configuration 3
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2.5 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 10;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 30;
-
-	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 100;
-	public static final int SHIFTS_REMOVAL = 20;
-	public static final int SHIFTS_INSERTION = 20;
-	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 25, 25, 20, 20};*/
-
-	/*// configuration 4
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 20;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 20;
-
-	public static final int SHIFTS_MINIMUM = 15;
-	public static final int SHIFTS_MAXIMUM = 45;
-	public static final int SHIFTS_REMOVAL = 2;
-	public static final int SHIFTS_INSERTION = 2;
-	public static final int[] PERTURBATION_WEIGHTAGE = {10, 10, 25, 25, 15, 15};*/
-
-
-	/* // configuration 5
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 20;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 20;
-
-	public static final int SHIFTS_MINIMUM = 1;
-	public static final int SHIFTS_MAXIMUM = 1000;
-	public static final int SHIFTS_REMOVAL = 10;
-	public static final int SHIFTS_INSERTION = 10;
-	public static final int[] PERTURBATION_WEIGHTAGE = {10, 10, 25, 25, 15, 15};*/
-
-	/* // configuration 6
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 20;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 20;
-
-	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 100;
-	public static final int SHIFTS_REMOVAL = 20;
-	public static final int SHIFTS_INSERTION = 20;
-	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 25, 25, 20, 20};
-	*/
-
-	/* // configuration 7
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 30;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 10;
-
-	public static final int SHIFTS_MINIMUM = 15;
-	public static final int SHIFTS_MAXIMUM = 45;
-	public static final int SHIFTS_REMOVAL = 2;
-	public static final int SHIFTS_INSERTION = 2;
-	public static final int[] PERTURBATION_WEIGHTAGE = {10, 10, 25, 25, 15, 15};
-	*/
-
-	/* // configuration 8
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 30;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 10;
-
-	public static final int SHIFTS_MINIMUM = 1;
-	public static final int SHIFTS_MAXIMUM = 1000;
-	public static final int SHIFTS_REMOVAL = 10;
-	public static final int SHIFTS_INSERTION = 10;
-	public static final int[] PERTURBATION_WEIGHTAGE = {10, 10, 25, 25, 15, 15};
-	*/
-
-	/* // configuration 9
-	public final static double TIME_INTERVAL = 1800;
-	public final static double START_SCHEDULE_TIME = 0;
-	public final static double END_SCHEDULE_TIME = 30 * 60 * 60;
-
-	public final static double DESIRED_REJECTION_RATE = 0.2;
-
-	public static final double BREAK_CORRIDOR_BUFFER = 2 * 60 * 60;
-	public static final double BREAK_CORRIDOR_MINIMUM_LENGTH = 60 * 60;
-	public static final double BREAK_CORRIDOR_MAXIMUM_LENGTH = 60 * 60;
-
-	public static final int SHIFT_TIMINGS_BUFFER = 0;
-	public static final double SHIFT_TIMINGS_MINIMUM_LENGTH = 5.5 * 60 * 60;
-	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = 8.5 * 60 * 60;
-
-	public static final double INITIAL_TEMPERATURE = 1000;
-
-	private static final double COST_PER_REJECTION_PER_HOUR = 30;
-	public static final  double PENALTY = 1000;
-	public static final double DRIVER_COST_PER_HOUR = 10;
-
-	public static final int SHIFTS_MINIMUM = 10;
-	public static final int SHIFTS_MAXIMUM = 100;
-	public static final int SHIFTS_REMOVAL = 20;
-	public static final int SHIFTS_INSERTION = 20;
-	public static final int[] PERTURBATION_WEIGHTAGE = {5, 5, 25, 25, 20, 20};
-	*/
-
-	public static final int ITERATIONS = 400;
-
+	public static final String COOLING_SCHEDULE = RunShiftOptimizerScenario.configMap.get("coolingSchedule");
 	public static Random random = new Random();
-	public static PerturbationType perturbationType = PerturbationType.MOVE_BREAK_CORRIDOR;
+	public static String PERTURBATION_TYPE = RunShiftOptimizerScenario.configMap.get("perturbationType");
 
-    public static void main(String[] args) {
-        ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
-        Individual individual = new Individual(readShift.getShifts());
+	public static void main(String[] args) {
+		ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
+		Individual individual = new Individual(readShift.getShifts());
 //		try {
 //			regression();
 //		} catch (FileNotFoundException e) {
 //			e.printStackTrace();
 //		}
-        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-		Individual mutatedIndividual = individual.deepCopy();
-		for (int i = 0; i < 100; i++)
-			perturb(mutatedIndividual);
-		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-		DrtShiftsWriter drtShiftsWriter = new DrtShiftsWriter(ShiftOptimizer.getDrtShiftsFromIndividual(individual));
-		drtShiftsWriter.writeFile("examples/scenarios/holzkirchen/SAShifts.xml");
-//		Individual mutatedIndividual2 = Perturbation.moveSAShiftTimings(mutatedIndividual);
+		individual.getShifts().forEach(shift -> System.out.println(joinMapValues(shift.getEncodedShift(), " ")));
+		System.out.println(joinMapValues(activeShiftsPerHour(individual), " "));
+//		Individual mutatedIndividual = individual.deepCopy();
 //		for (int i = 0; i < 100; i++)
-//			mutatedIndividual2 = perturb(mutatedIndividual2);
-//		mutatedIndividual2.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-//		for (SAShift SAShift : mutatedIndividual.getShifts()) {
-//			System.out.println((SAShift.getEndTime()- SAShift.getStartTime()) / 3600);
-//		}
-//        System.out.println(individual.getShifts().size());
-//        Individual mutatedIndividual = Perturbation.moveSABreakCorridor(individual).deepCopy();
-//        for (int i = 0; i < 100; i++)
-//            mutatedIndividual = Perturbation.moveSABreakCorridor(mutatedIndividual);
-//        mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-//        System.out.println(mutatedIndividual.getShifts().size());
-//        individual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
-//        System.out.println(individual.getShifts().size());
-//        for (var shift: mutatedIndividual.getShifts()) {
-//            shift = shift.decodeShiftV2(shift, shift.getId());
-//            System.out.println(shift.getId() + " " + shift.getStartTime() + " " + shift.getEndTime());
-//            System.out.println(shift.getSABreak().getLatestEnd() - shift.getSABreak().getEarliestStart() + " " + shift.getSABreak().getDuration());
-//        }
-//        int smallIndex = random.nextInt(individual.getShifts().size() - 1);
-//        int largeIndex = 0;
-//        while (smallIndex > largeIndex)
-//        	largeIndex = random.nextInt(individual.getShifts().size());
-    }
+//			perturb(mutatedIndividual);
+//		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
+	}
 	public static void regression () throws FileNotFoundException {
 		double[] columnDouble;
 		Map<String, double[]> rows = new LinkedHashMap<>();
@@ -338,138 +61,175 @@ public class SimulatedAnnealing{
 		System.out.println(model.calculateRSquared());
 		System.out.println(model.calculateAdjustedRSquared());
 	}
+	public static double coolingTemperature(int iteration, double alpha) {
+		if (COOLING_SCHEDULE.equalsIgnoreCase(RunShiftOptimizerScenario.configMap.get("LINEAR"))) {
+			return Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INITIAL_TEMPERATURE")) / (1 + alpha * iteration);
+		} else {
+			return alpha * iteration;
+		}
+	}
+	public static void perturb(Individual individual) {
+		if (PERTURBATION_TYPE.equalsIgnoreCase("MOVE_BREAK_CORRIDOR")) {
+			Perturbation.moveSABreakCorridor(individual);
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("INSERT_SHIFT")) {
 
-    public static void perturb(Individual individual) {
-        if (perturbationType == PerturbationType.MOVE_BREAK_CORRIDOR) {
-             Perturbation.moveSABreakCorridor(individual);
-        }
-        else if (perturbationType == PerturbationType.INSERT_SHIFT) {
+			Perturbation.insertSAShifts(individual);
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("MOVE_SHIFT_TIMINGS")) {
 
-             Perturbation.insertSAShifts(individual);
-        }
-        else if (perturbationType == PerturbationType.MOVE_SHIFT_TIMINGS) {
+			Perturbation.moveSAShiftTimings(individual);
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("REMOVE_SHIFT")) {
 
-             Perturbation.moveSAShiftTimings(individual);
-        }
-        else if (perturbationType == PerturbationType.REMOVE_SHIFT) {
+			Perturbation.removeSAShifts(individual);
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("INCREASE_SHIFT_TIMINGS")) {
 
-             Perturbation.removeSAShifts(individual);
-        }
-        else if (perturbationType == PerturbationType.INCREASE_SHIFT_TIMINGS) {
+			Perturbation.increaseSAShiftTimings(individual);
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("DECREASE_SHIFT_TIMINGS")) {
 
-             Perturbation.increaseSAShiftTimings(individual);
-        }
-        else if (perturbationType == PerturbationType.DECREASE_SHIFT_TIMINGS) {
-
-             Perturbation.decreaseSAShiftTimings(individual);
-        }
-        else if (perturbationType == PerturbationType.RANDOM_PERTURB) {
-            int num = random.nextInt(8);
-            switch(num) {
-                case 0:
-                     Perturbation.removeSAShifts(individual);
-                case 1:
-                     Perturbation.moveSABreakCorridor(individual);
-                case 2:
-                     Perturbation.moveSAShiftTimings(individual);
-                case 3:
-                     Perturbation.insertSAShifts(individual);
-                case 4:
-                     Perturbation.increaseSAShiftTimings(individual);
-                case 5:
-                     Perturbation.decreaseSAShiftTimings(individual);
-            }
-        }
-		else if (perturbationType == PerturbationType.WEIGHTED_PERTURB_V2) {
+			Perturbation.decreaseSAShiftTimings(individual);
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("RANDOM_PERTURB")) {
+			int num = random.nextInt(8);
+			switch(num) {
+				case 0:
+					Perturbation.removeSAShifts(individual);
+				case 1:
+					Perturbation.moveSABreakCorridor(individual);
+				case 2:
+					Perturbation.moveSAShiftTimings(individual);
+				case 3:
+					Perturbation.insertSAShifts(individual);
+				case 4:
+					Perturbation.increaseSAShiftTimings(individual);
+				case 5:
+					Perturbation.decreaseSAShiftTimings(individual);
+			}
+		}
+		else if (PERTURBATION_TYPE.equalsIgnoreCase("WEIGHTED_PERTURB_V2")) {
 			int num = random.nextInt(100);
-			if (num <= PERTURBATION_WEIGHTAGE[0]) {
+			if (num <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("REMOVE_SHIFT_WEIGHT"))) {
 				Perturbation.removeSAShifts(individual);
-			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1])) {
+			} else if (num <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INSERT_SHIFT_WEIGHT"))) {
 				Perturbation.insertSAShifts(individual);
-			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1] + PERTURBATION_WEIGHTAGE[2])) {
+			} else if (num <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("MOVE_BREAK_CORRIDOR_WEIGHT"))) {
 				Perturbation.moveSABreakCorridor(individual);
-			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1] + PERTURBATION_WEIGHTAGE[2] + PERTURBATION_WEIGHTAGE[3])) {
+			} else if (num <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("MOVE_SHIFT_TIMINGS_WEIGHT"))) {
 				Perturbation.moveSAShiftTimings(individual);
-			} else if (num <= (PERTURBATION_WEIGHTAGE[0] + PERTURBATION_WEIGHTAGE[1] + PERTURBATION_WEIGHTAGE[2] + PERTURBATION_WEIGHTAGE[3] + PERTURBATION_WEIGHTAGE[4])) {
+			} else if (num <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INCREASE_SHIFT_TIMINGS_WEIGHT"))) {
 				Perturbation.increaseSAShiftTimings(individual);
 			} else {
 				Perturbation.decreaseSAShiftTimings(individual);
 			}
 		}
-    }
+	}
 
-    public static double acceptanceProbability(double currentCost, double newCost, double temperature) {
-        // If the new solution is better, accept it
-        if (newCost < currentCost) {
-            return  1.0;
-        }
-        // If the new solution is worse, calculate an acceptance probability
-         return Math.exp((currentCost - newCost) / temperature);
-    }
+	public static double acceptanceProbability(double currentCost, double newCost, double temperature) {
+		// If the new solution is better, accept it
+		if (newCost < currentCost) {
+			return  1.0;
+		}
+		// If the new solution is worse, calculate an acceptance probability
+		return Math.exp((currentCost - newCost) / temperature);
+	}
 
-    public static String printMap(Map<Double, Double> map) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (var entry : map.entrySet()) {
-            stringBuilder.append(entry.getValue().intValue()).append("");
-        }
-        return stringBuilder.toString();
-    }
+	public static String joinMapValues(Map<Double, Double> map, String delimiter) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (var entry : map.entrySet()) {
+			stringBuilder.append(entry.getValue().intValue()).append(delimiter);
+		}
+		return stringBuilder.toString();
+	}
 
-    public static double getSumOfValues(Map<Double, Double> map) {
-        double sum = 0;
-        for (var entry : map.entrySet())
-            sum = sum + entry.getValue();
-        return sum;
-    }
-    //decrease cost
-    public static double getCostOfSolution(Individual individual, Map<Double, Double> rejections) {
-        /*
-        // soft constraint
-        double costOfDriverHours = getSumOfValues(driversPerTimeBin(individual)) * COST_PER_DRIVER;
-        double costOfRejecting = getSumOfValues(rejectionRate);
-        double fitness;
-        double penalties = 0;
-        // hard constraint
-        for (var entry: rejectionRate.entrySet()) {
-            double rate = entry.getValue();
-            if (rate >= DESIRED_REJECTION_RATE)
-                penalties += PENALTY;
-        }
-        fitness =  costOfDriverHours + costOfRejecting + penalties;
-        */
-        // soft constraint
-        double costOfDriverHours = eachShiftDriverHour(individual) * DRIVER_COST_PER_HOUR;
-        double costOfRejecting = getSumOfValues(rejections) * COST_PER_REJECTION_PER_HOUR;
-        double cost;
-        double penalties = 0;
-        // hard constraint
-        for (var entry: rejections.entrySet()) {
-            double rate = entry.getValue();
-            if (rate >= DESIRED_REJECTION_RATE)
-                penalties += PENALTY;
-        }
-        cost =  costOfDriverHours + costOfRejecting + penalties;
-        return cost;
-    }
+	public static double getSumOfValues(Map<Double, Double> map) {
+		double sum = 0;
+		for (var entry : map.entrySet())
+			sum = sum + entry.getValue();
+		return sum;
+	}
+	//decrease cost
+	public static double getCostOfSolution(Individual individual, Map<Double, Double> rejections) {
+		// soft constraint
+		double costOfDriverHours = totalDriverHours(individual) * Double.parseDouble(RunShiftOptimizerScenario.configMap.get("DRIVER_COST_PER_HOUR"));
+		double costOfRejecting = getSumOfValues(rejections) * Double.parseDouble(RunShiftOptimizerScenario.configMap.get("COST_PER_REJECTION_PER_HOUR"));
+		double cost;
+		double penalties = 0;
+		// hard constraint
+		for (var entry: rejections.entrySet()) {
+			double rate = entry.getValue();
+			if (rate >= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("DESIRED_REJECTION_RATE")))
+				penalties += Double.parseDouble(RunShiftOptimizerScenario.configMap.get("PENALTY"));
+		}
+		cost =  costOfDriverHours + costOfRejecting + penalties;
+		return cost;
+	}
 
+	public static double totalDriverHours (Individual individual) {
+		double sum = 0;
+		for (SAShift SAShift : individual.getShifts()) {
+			sum += (SAShift.getEndTime() - SAShift.getStartTime()) / 3600;
+		}
+		return sum;
+	}
 
-    public static double eachShiftDriverHour(Individual individual) {
-        double sum = 0;
-        for (SAShift SAShift : individual.getShifts()) {
-            sum += (SAShift.getEndTime() - SAShift.getStartTime()) / 3600;
-        }
-        return sum;
-    }
+	public static Map<Double, Double> activeShiftsPerHour(Individual individual) {
+		Map<Double, Double> activeShiftsPerTimeInterval = new LinkedHashMap<>();
+		initializeEncodingPerTimeInterval(activeShiftsPerTimeInterval);
+		for (SAShift shift: individual.getShifts()) {
+			for (Map.Entry<Double, Double> entry : shift.getEncodedShift().entrySet()) {
+				double existingValue = entry.getValue();
+				double newValue = activeShiftsPerTimeInterval.get(entry.getKey());
+				if (existingValue == 1) {
+					newValue = newValue + existingValue;
+				}
+				activeShiftsPerTimeInterval.put(entry.getKey(),  newValue);
+			}
+		}
+		Map<Double, Double> activeShiftsPerHour = new LinkedHashMap<>();
+		initializeEncodingPerHour(activeShiftsPerHour);
+		List<Double> values = new ArrayList<>(activeShiftsPerTimeInterval.values());
+		List<Double> keys = new ArrayList<>(activeShiftsPerHour.keySet());
+		for (int j = 0; j < values.size(); j += 2) {
+			activeShiftsPerHour.put(keys.get(j/2), values.get(j));
+		}
+		for (int j = 1; j < values.size(); j += 2) {
+			activeShiftsPerHour.put(keys.get(j/2), activeShiftsPerHour.get((j-1.0)/2.0) + values.get(j));
+		}
+		return activeShiftsPerHour;
+	}
+	/**
+	 * Makes the initial values of all time stamps in a day's supply (number of available drivers) schedule to 0
+	 * (no work for any driver)
+	 * @param encodedShift a map where keys are time stamps and values are day's supply scheduleGeneSequence
+	 */
+	public static void initializeEncodingPerTimeInterval(Map<Double, Double> encodedShift) {
+		for (double i = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME")); i < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")); i += Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"))) {
+			encodedShift.put(i, 0.0);
+		}
+	}
 
-    public enum PerturbationType {
-        REMOVE_SHIFT,
-        INSERT_SHIFT,
+	public static void initializeEncodingPerHour(Map<Double, Double> encodedShift) {
+		for (double i = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME")); i < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")); i += 3600) {
+			encodedShift.put(i / 3600, 0.0);
+		}
+	}
+
+	public enum PerturbationType {
+		REMOVE_SHIFT,
+		INSERT_SHIFT,
 		MOVE_BREAK_CORRIDOR,
 		MOVE_SHIFT_TIMINGS,
-        INCREASE_SHIFT_TIMINGS,
-        DECREASE_SHIFT_TIMINGS,
-        RANDOM_PERTURB,
-		WEIGHTED_PERTURB_V2;
+		INCREASE_SHIFT_TIMINGS,
+		DECREASE_SHIFT_TIMINGS,
+		RANDOM_PERTURB,
+		WEIGHTED_PERTURB_V2
+	}
+	public enum CoolingSchedule {
+		EXPONENTIAL,
+		LINEAR
 	}
 }
 

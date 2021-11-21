@@ -26,14 +26,15 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.*;
 
 public class RunShiftOptimizerScenario {
 
 	private static final boolean infield = true;
 	private static final boolean rebalancing = false;
-
+	public static final Map<String, String> configMap = new LinkedHashMap<>();
 	public static void main(String[] args) {
 
 		MultiModeDrtConfigGroup multiModeDrtConfigGroup = new MultiModeDrtConfigGroup();
@@ -50,6 +51,25 @@ public class RunShiftOptimizerScenario {
 		File network = new File("examples/scenarios/holzkirchen/holzkirchenNetwork.xml.gz");
 		File opFacilities = new File("examples/scenarios/holzkirchen/holzkirchenOperationFacilities.xml");
 		File shifts = new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml");
+
+
+		List<String> keys = new LinkedList<>();
+		List<String> values = new LinkedList<>();
+		try {
+			Scanner scanner = new Scanner(new FileReader("test/output/saved/configurations.csv"));
+			String[] columns = scanner.nextLine().split("\t");
+			String[] columnsSplit = columns[0].split(",");
+			keys.addAll(Arrays.asList(columnsSplit));
+			String[] configs = scanner.nextLine().split("\t");
+			String[] configsSplit = configs[0].split(",");
+			values.addAll(Arrays.asList(configsSplit));
+			for (int i = 0; i < values.size(); i++) {
+				configMap.put(keys.get(i), values.get(i));
+			}
+		}
+		catch (FileNotFoundException fileNotFoundException) {
+			fileNotFoundException.printStackTrace();
+		}
 
 		DrtConfigGroup drtConfigGroup = new DrtConfigGroup().setMode(TransportMode.drt)
 				.setMaxTravelTimeAlpha(1.5)
@@ -129,7 +149,7 @@ public class RunShiftOptimizerScenario {
 		stratSets.setStrategyName("ChangeExpBeta");
 		config.strategy().addStrategySettings(stratSets);
 
-		config.controler().setLastIteration(SimulatedAnnealing.ITERATIONS);
+		config.controler().setLastIteration(Integer.parseInt(RunShiftOptimizerScenario.configMap.get("ITERATIONS")));
 		config.controler().setWriteEventsInterval(1);
 
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);

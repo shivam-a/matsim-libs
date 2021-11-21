@@ -2,6 +2,7 @@ package org.matsim.contrib.simulated_annealing;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.shifts.run.RunShiftOptimizerScenario;
 import org.matsim.contrib.shifts.shift.DrtShift;
 
 import java.util.*;
@@ -95,7 +96,7 @@ public class SAShift {
 
 	public void encodeShiftV2() {
 		encodedShift = new LinkedHashMap<>();
-		initializeEncoding(encodedShift);
+		SimulatedAnnealing.initializeEncodingPerTimeInterval(encodedShift);
 		for (var entry: encodedShift.entrySet()) {
 			if (entry.getKey() > start && entry.getKey() <= end) {
 				encodedShift.put(entry.getKey(), 1.0);
@@ -119,18 +120,20 @@ public class SAShift {
 		Double latestEnd = this.deepCopy().getEncodedShift().entrySet().stream().filter(entry -> entry.getValue().intValue() == 2.0).map(Map.Entry::getKey).reduce((__, last) -> last).orElse(null);
 		double breakDuration = 0;
 		if (end != null && start != null && latestEnd != null && earliestStart != null) {
-			start = start - SimulatedAnnealing.TIME_INTERVAL;
-			earliestStart = earliestStart - SimulatedAnnealing.TIME_INTERVAL;
+			start = start - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
+			earliestStart = earliestStart - Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
 			if ((end > start) && (latestEnd > earliestStart)) {
-				if (((latestEnd + SimulatedAnnealing.TIME_INTERVAL - earliestStart) > 0) &&
-						((latestEnd + SimulatedAnnealing.TIME_INTERVAL - earliestStart) <= SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
-						((end - start) > SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH) &&
-						((end - start) <= SimulatedAnnealing.SHIFT_TIMINGS_MAXIMUM_LENGTH)) {
+				boolean timeInterval = (latestEnd + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) - earliestStart) > 0;
+				boolean breakCorridor = (latestEnd + Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL")) - earliestStart) <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("BREAK_CORRIDOR_MINIMUM_LENGTH"));
+				if (timeInterval &&
+						breakCorridor &&
+						((end - start) > Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_MINIMUM_LENGTH"))) &&
+						((end - start) <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_MAXIMUM_LENGTH")))) {
 					breakDuration = 1800;
-				} else if (((latestEnd + SimulatedAnnealing.TIME_INTERVAL - earliestStart) > 0) &&
-						((latestEnd + SimulatedAnnealing.TIME_INTERVAL - earliestStart) <= SimulatedAnnealing.BREAK_CORRIDOR_MINIMUM_LENGTH) &&
+				} else if (timeInterval &&
+						breakCorridor &&
 						((end - start) > 0) &&
-						((end - start) <= SimulatedAnnealing.SHIFT_TIMINGS_MINIMUM_LENGTH)) {
+						((end - start) <= Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_MINIMUM_LENGTH")))) {
 					breakDuration = 0;
 				}
 			}
@@ -143,17 +146,5 @@ public class SAShift {
 		else throw new NullPointerException("Shift is null");
 		return decodedSAShift;
 	}
-	/**
-	 * Makes the initial values of all time stamps in a day's supply (number of available drivers) schedule to 0
-	 * (no work for any driver)
-	 * @param encodedShift a map where keys are time stamps and values are day's supply scheduleGeneSequence
-	 */
-	public void initializeEncoding (Map<Double, Double> encodedShift) {
-		double timeInterval = SimulatedAnnealing.TIME_INTERVAL;
-		double startScheduleTime = SimulatedAnnealing.START_SCHEDULE_TIME;
-		double endScheduleTime = SimulatedAnnealing.END_SCHEDULE_TIME;
-		for (double i = startScheduleTime; i < endScheduleTime; i += timeInterval) {
-			encodedShift.put(i, 0.0);
-		}
-	}
+
 }

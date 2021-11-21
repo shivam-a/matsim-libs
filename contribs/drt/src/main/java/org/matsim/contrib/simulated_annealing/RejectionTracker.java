@@ -5,6 +5,7 @@ import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEvent;
 import org.matsim.contrib.drt.passenger.events.DrtRequestSubmittedEventHandler;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestRejectedEvent;
 import org.matsim.contrib.dvrp.passenger.PassengerRequestRejectedEventHandler;
+import org.matsim.contrib.shifts.run.RunShiftOptimizerScenario;
 import org.matsim.core.controler.listener.ControlerListener;
 import org.matsim.core.mobsim.framework.events.MobsimBeforeSimStepEvent;
 import org.matsim.core.mobsim.framework.listeners.MobsimBeforeSimStepListener;
@@ -51,13 +52,16 @@ public class RejectionTracker implements PassengerRequestRejectedEventHandler, D
             if (Double.isNaN(rejectedCounter / submittedCounter))
                 rejectionRate = 0;
             else rejectionRate = rejectedCounter / submittedCounter;
-            double bin = mobsimBeforeSimStepEvent.getSimulationTime() / timeBinSize;
-            rejectionRatePerTimeBin.put(bin, rejectionRate);
-            rejectionsPerTimeBin.put(bin, rejectedCounter);
-            submittedPerTimeBin.put(bin, submittedCounter);
-			logger.info("The time bin: " + bin + " ; The rejection rate: " + rejectionRate);
-			logger.info("The time bin: " + bin + " ; The rejected requests: " + rejectedCounter);
-			logger.info("The time bin: " + bin + " ; The submitted requests: " + submittedCounter);
+			double bin;
+            if (mobsimBeforeSimStepEvent.getSimulationTime() < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME"))) {
+				bin = mobsimBeforeSimStepEvent.getSimulationTime() / timeBinSize;
+				rejectionRatePerTimeBin.put(bin, rejectionRate);
+				rejectionsPerTimeBin.put(bin, rejectedCounter);
+				submittedPerTimeBin.put(bin, submittedCounter);
+				logger.info("The time bin: " + bin + " ; The rejection rate: " + rejectionRate);
+				logger.info("The time bin: " + bin + " ; The rejected requests: " + rejectedCounter);
+				logger.info("The time bin: " + bin + " ; The submitted requests: " + submittedCounter);
+			}
             rejectedCounter = 0;
             submittedCounter = 0;
         }
