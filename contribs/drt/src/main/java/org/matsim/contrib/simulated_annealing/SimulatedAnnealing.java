@@ -14,53 +14,14 @@ public class SimulatedAnnealing{
 	public static void main(String[] args) {
 		ReadShift readShift = new ReadShift(new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml"));
 		Individual individual = new Individual(readShift.getShifts());
-//		try {
-//			regression();
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		}
-		individual.getShifts().forEach(shift -> System.out.println(joinMapValues(shift.getEncodedShift(), " ")));
-		System.out.println(joinMapValues(activeShiftsPerHour(individual), " "));
+//		individual.getShifts().forEach(shift -> System.out.println(joinMapValues(shift.getEncodedShift(), " ")));
+//		System.out.println(joinMapValues(activeShiftsPerHour(individual), " "));
 //		Individual mutatedIndividual = individual.deepCopy();
 //		for (int i = 0; i < 100; i++)
 //			perturb(mutatedIndividual);
 //		mutatedIndividual.getShifts().forEach(shift -> System.out.println(printMap(shift.getEncodedShift())));
 	}
-	public static void regression () throws FileNotFoundException {
-		double[] columnDouble;
-		Map<String, double[]> rows = new LinkedHashMap<>();
 
-		Scanner sc = new Scanner(new File("test/output/saved/shift_log1_1.csv"));
-
-		int countRows = 0;
-		while (sc.hasNextLine())
-		{
-			String[] columnString = sc.nextLine().split(",");
-			columnDouble = Arrays.stream(columnString).mapToDouble(Double::valueOf).toArray();
-			rows.put(columnString[0], columnDouble);
-			countRows += 1;
-		}
-
-		countRows=50;
-		double[] dependentVariable = new double[countRows];
-		double[][] independentVariable = new double[countRows][2];
-		List<String> rowIndex = new ArrayList<>(rows.keySet());
-
-		for (int i=0; i<countRows; i++) {
-			dependentVariable[i] = rows.get(rowIndex.get(i))[3];
-			independentVariable[i][0] = rows.get(rowIndex.get(i))[1];
-			independentVariable[i][1] = rows.get(rowIndex.get(i))[2];
-//			independentVariable[i][2] = rows.get(rowIndex.get(i))[6];
-			System.out.println(Arrays.toString(rows.get(rowIndex.get(i))));
-		}
-
-		OLSMultipleLinearRegression model = new OLSMultipleLinearRegression();
-		model.newSampleData(dependentVariable, independentVariable);
-		System.out.println(Arrays.toString(model.estimateRegressionParameters()));
-		System.out.println(Arrays.toString(model.estimateResiduals()));
-		System.out.println(model.calculateRSquared());
-		System.out.println(model.calculateAdjustedRSquared());
-	}
 	public static double coolingTemperature(int iteration, double alpha) {
 		if (COOLING_SCHEDULE.equalsIgnoreCase("LINEAR")) {
 			return Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INITIAL_TEMPERATURE")) / (1 + (alpha * iteration));
@@ -139,7 +100,7 @@ public class SimulatedAnnealing{
 	public static String joinMapValues(Map<Double, Double> map, String delimiter) {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (var entry : map.entrySet()) {
-			stringBuilder.append(entry.getValue().intValue()).append(delimiter);
+			stringBuilder.append(entry.getValue().doubleValue()).append(delimiter);
 		}
 		return stringBuilder.toString();
 	}
