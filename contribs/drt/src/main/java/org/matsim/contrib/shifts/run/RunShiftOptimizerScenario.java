@@ -56,7 +56,7 @@ public class RunShiftOptimizerScenario {
 		List<String> keys = new LinkedList<>();
 		List<String> values = new LinkedList<>();
 		try {
-			Scanner scanner = new Scanner(new FileReader("test/output/saved/configurations.csv"));
+			Scanner scanner = new Scanner(new FileReader("test/output/shifts_optimization/configurations.csv"));
 			String[] columns = scanner.nextLine().split("\t");
 			String[] columnsSplit = columns[0].split(",");
 			keys.addAll(Arrays.asList(columnsSplit));
