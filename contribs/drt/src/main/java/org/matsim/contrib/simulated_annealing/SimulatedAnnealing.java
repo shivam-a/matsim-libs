@@ -62,8 +62,8 @@ public class SimulatedAnnealing{
 		System.out.println(model.calculateAdjustedRSquared());
 	}
 	public static double coolingTemperature(int iteration, double alpha) {
-		if (COOLING_SCHEDULE.equalsIgnoreCase(RunShiftOptimizerScenario.configMap.get("LINEAR"))) {
-			return Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INITIAL_TEMPERATURE")) / (1 + alpha * iteration);
+		if (COOLING_SCHEDULE.equalsIgnoreCase("LINEAR")) {
+			return Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INITIAL_TEMPERATURE")) / (1 + (alpha * iteration));
 		} else {
 			return alpha * iteration;
 		}

@@ -60,6 +60,10 @@ public class RunShiftOptimizerScenario {
 			String[] columns = scanner.nextLine().split("\t");
 			String[] columnsSplit = columns[0].split(",");
 			keys.addAll(Arrays.asList(columnsSplit));
+			int configNumber = 2;
+			for (int i = 1; i < configNumber; i++) {
+				scanner.nextLine();
+			}
 			String[] configs = scanner.nextLine().split("\t");
 			String[] configsSplit = configs[0].split(",");
 			values.addAll(Arrays.asList(configsSplit));

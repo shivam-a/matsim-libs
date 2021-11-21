@@ -22,7 +22,7 @@ public class ShiftOptimizer implements IterationEndsListener {
     private final DrtShifts initialSolution;
     private DrtShifts currentSolution;
     private DrtShifts acceptedSolution;
-	private double temp = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("INITIAL_TEMPERATURE"));
+	private double temp;
 	public double currentIndividualCost = Double.POSITIVE_INFINITY;
     public double acceptedIndividualCost = Double.POSITIVE_INFINITY;
 
@@ -218,7 +218,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		FileWriter csvwriter;
 		BufferedWriter bufferedWriter = null;
 		try {
-			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/current_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/current_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), false);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringJoiner stringJoiner = new StringJoiner(",");
 			stringJoiner.add("iteration")
@@ -253,7 +253,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		FileWriter csvwriter;
 		BufferedWriter bufferedWriter = null;
 		try {
-			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/accepted_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/accepted_shift_plan.csv", RunShiftOptimizerScenario.configMap.get("configuration")), false);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringJoiner stringJoiner = new StringJoiner(",");
 			stringJoiner.add("iteration")
@@ -288,7 +288,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		FileWriter csvwriter;
 		BufferedWriter bufferedWriter = null;
 		try {
-			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/submitted_requests_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/submitted_requests_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), false);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringBuilder stringBuilder = new StringBuilder();
 			for (int i = 0; i < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME")) / 3600; i++) {
@@ -320,7 +320,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 		FileWriter csvwriter;
 		BufferedWriter bufferedWriter = null;
 		try {
-			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/active_shifts_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), true);
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/config%s/active_shifts_per_hour.csv", RunShiftOptimizerScenario.configMap.get("configuration")), false);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringJoiner stringJoiner = new StringJoiner(",");
 			StringBuilder stringBuilder = new StringBuilder();
