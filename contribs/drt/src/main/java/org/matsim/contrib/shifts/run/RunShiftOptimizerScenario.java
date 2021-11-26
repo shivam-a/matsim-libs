@@ -40,19 +40,12 @@ public class RunShiftOptimizerScenario {
 		MultiModeDrtConfigGroup multiModeDrtConfigGroup = new MultiModeDrtConfigGroup();
 
 		/*
-		URL fleet = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenFleet.xml");
+		URL fleet = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchen30Fleet.xml");
 		URL plans = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenPlans.xml.gz");
 		URL network = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenNetwork.xml.gz");
 		URL opFacilities = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenOperationFacilities.xml");
-		URL shifts = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenShifts.xml");
+		URL shifts = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchen30Shifts.xml");
 		*/
-		File fleet = new File("examples/scenarios/holzkirchen/holzkirchenFleet.xml");
-		File plans = new File("examples/scenarios/holzkirchen/holzkirchenPlans.xml.gz");
-		File network = new File("examples/scenarios/holzkirchen/holzkirchenNetwork.xml.gz");
-		File opFacilities = new File("examples/scenarios/holzkirchen/holzkirchenOperationFacilities.xml");
-		File shifts = new File("examples/scenarios/holzkirchen/holzkirchenShifts.xml");
-
-
 		List<String> keys = new LinkedList<>();
 		List<String> values = new LinkedList<>();
 		try {
@@ -60,7 +53,12 @@ public class RunShiftOptimizerScenario {
 			String[] columns = scanner.nextLine().split("\t");
 			String[] columnsSplit = columns[0].split(",");
 			keys.addAll(Arrays.asList(columnsSplit));
-			int configNumber = 2;
+			/*
+			1-19 30_shifts
+			20-38 5_shifts
+			39-57 60_shifts
+			 */
+			int configNumber = 39;
 			for (int i = 1; i < configNumber; i++) {
 				scanner.nextLine();
 			}
@@ -74,6 +72,12 @@ public class RunShiftOptimizerScenario {
 		catch (FileNotFoundException fileNotFoundException) {
 			fileNotFoundException.printStackTrace();
 		}
+
+		File fleet = new File(configMap.get("fleet_path"));
+		File plans = new File("examples/scenarios/holzkirchen/holzkirchenPlans.xml.gz");
+		File network = new File("examples/scenarios/holzkirchen/holzkirchenNetwork.xml.gz");
+		File opFacilities = new File("examples/scenarios/holzkirchen/holzkirchenOperationFacilities.xml");
+		File shifts = new File(configMap.get("shift_plan_path"));
 
 		DrtConfigGroup drtConfigGroup = new DrtConfigGroup().setMode(TransportMode.drt)
 				.setMaxTravelTimeAlpha(1.5)
@@ -153,7 +157,7 @@ public class RunShiftOptimizerScenario {
 		stratSets.setStrategyName("ChangeExpBeta");
 		config.strategy().addStrategySettings(stratSets);
 
-		config.controler().setLastIteration(Integer.parseInt(RunShiftOptimizerScenario.configMap.get("ITERATIONS")));
+		config.controler().setLastIteration(Integer.parseInt(configMap.get("ITERATIONS")));
 		config.controler().setWriteEventsInterval(1);
 
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);

@@ -2,6 +2,7 @@ package org.matsim.contrib.simulated_annealing;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The map of ScheduleSequences (values) and Driver number (key) that represents a shift timetable
@@ -10,6 +11,12 @@ import java.util.List;
 public class Individual {
 
     private List<SAShift> SAShiftList;
+
+	public Map<Double, Double> getRejectionRate() {
+		return rejectionRate;
+	}
+
+	private Map<Double, Double> rejectionRate;
 
     public Individual() {
     }
@@ -39,6 +46,8 @@ public class Individual {
     }
 
 
-
+	public void setRejectionRate(Map<Double, Double> rejectionRate) {
+		this.rejectionRate = rejectionRate;
+	}
 }
 

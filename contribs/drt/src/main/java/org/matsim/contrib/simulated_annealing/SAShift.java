@@ -11,6 +11,10 @@ import java.util.*;
  * An map object that represents a binary sequence of availability of drivers per time stamp
  */
 public class SAShift {
+	public double END_SCHEDULE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME"));
+	public double START_SCHEDULE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME"));
+	public double TIME_INTERVAL = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
+
 	private SABreak saBreak;
 	private Map<Double, Double> encodedShift;
 	private Id<DrtShift> id;
@@ -28,15 +32,12 @@ public class SAShift {
 	public SAShift() {
 	}
 
-
 	public void setStartTime(double time) {
 		if ((time % 1) != 0) {
 			throw new RuntimeException("Cannot use fractions of seconds!");
 		}
 		this.start = time;
 	}
-
-
 
 	public void setEndTime(double time) {
 		if ((time % 1) != 0) {
@@ -45,11 +46,9 @@ public class SAShift {
 		this.end = time;
 	}
 
-
 	public double getStartTime() {
 		return start;
 	}
-
 
 	public double getEndTime() {
 		return end;
@@ -96,7 +95,7 @@ public class SAShift {
 
 	public void encodeShiftV2() {
 		encodedShift = new LinkedHashMap<>();
-		SimulatedAnnealing.initializeEncodingPerTimeInterval(encodedShift);
+		initializeEncodingPerTimeInterval(encodedShift);
 		for (var entry: encodedShift.entrySet()) {
 			if (entry.getKey() > start && entry.getKey() <= end) {
 				encodedShift.put(entry.getKey(), 1.0);
@@ -108,6 +107,20 @@ public class SAShift {
 				if (timeBin > getSABreak().getEarliestStart() && timeBin <= getSABreak().getLatestEnd())
 					encodedShift.put(timeBin, 2.0);
 			}
+		}
+	}
+	/**
+	 * Makes the initial values of all time stamps in a day's supply (number of available drivers) schedule to 0
+	 * (no work for any driver)
+	 * @param encodedShift a map where keys are time stamps and values are day's supply scheduleGeneSequence
+	 */
+
+	public void initializeEncodingPerTimeInterval(Map<Double, Double> encodedShift) {
+//		double START_SCHEDULE_TIME = 0;
+//		double END_SCHEDULE_TIME = 30 * 60 * 60;
+//		double TIME_INTERVAL = 1800;
+		for (double i = START_SCHEDULE_TIME; i < END_SCHEDULE_TIME; i += TIME_INTERVAL) {
+			encodedShift.put(i, 0.0);
 		}
 	}
 

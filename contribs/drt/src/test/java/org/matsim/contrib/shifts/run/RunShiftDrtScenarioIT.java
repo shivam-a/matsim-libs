@@ -48,11 +48,11 @@ public class RunShiftDrtScenarioIT {
 
 		MultiModeDrtConfigGroup multiModeDrtConfigGroup = new MultiModeDrtConfigGroup();
 
-		URL fleet = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenFleet.xml");
+		URL fleet = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchen30Fleet.xml");
 		URL plans = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenPlans.xml.gz");
 		URL network = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenNetwork.xml.gz");
 		URL opFacilities = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenOperationFacilities.xml");
-		URL shifts = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenShifts.xml");
+		URL shifts = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchen30Shifts.xml");
 
 		DrtConfigGroup drtConfigGroup = new DrtConfigGroup().setMode(TransportMode.drt)
 				.setMaxTravelTimeAlpha(1.5)

@@ -53,11 +53,11 @@ public class RunEShiftDrtScenarioIT {
 
 		MultiModeDrtConfigGroup multiModeDrtConfigGroup = new MultiModeDrtConfigGroup();
 
-		URL fleet = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenFleet.xml");
+		URL fleet = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchen30Fleet.xml");
 		URL plans = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenPlans.xml");
 		URL network = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenNetwork.xml.gz");
 		URL opFacilities = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenOperationFacilities.xml");
-		URL shifts = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenShifts.xml");
+		URL shifts = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchen30Shifts.xml");
 		URL chargers = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenChargers.xml");
 		URL evs = IOUtils.extendUrl(ExamplesUtils.getTestScenarioURL("holzkirchen"), "holzkirchenElectricFleet.xml");
 
