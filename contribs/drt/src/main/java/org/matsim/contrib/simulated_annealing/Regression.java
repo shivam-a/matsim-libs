@@ -30,15 +30,17 @@ public class Regression {
 //		System.out.println(Arrays.toString(rejectionRate));
 //	}
 
-	public double[] predictedRejectionRate(double[] activeShiftsArray, double[] submittedRequestsArray) {
+	public double[] estimateRejectionRateArray(double[] activeShiftsArray, double[] submittedRequestsArray) {
 		double[] rejectionRate = new double[submittedRequestsArray.length];
 		for (int i = 0; i < submittedRequestsArray.length; i ++) {
-			rejectionRate[i] = predictRejectionRate(activeShiftsArray[i], submittedRequestsArray[i]);
+			if (estimateRejectionRate(activeShiftsArray[i], submittedRequestsArray[i]) > 1)
+				rejectionRate[i] = 1.0;
+			else rejectionRate[i] = estimateRejectionRate(activeShiftsArray[i], submittedRequestsArray[i]);
 		}
 		return rejectionRate;
 	}
 
-	private double predictRejectionRate(double activeShift, double submittedRequest) {
+	private double estimateRejectionRate(double activeShift, double submittedRequest) {
 		if (submittedRequest == 0 || submittedRequest == 1)
 			return 0;
 		else return betas[0] * (1 / Math.exp(activeShift)) +

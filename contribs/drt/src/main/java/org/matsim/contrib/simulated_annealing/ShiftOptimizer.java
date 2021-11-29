@@ -46,8 +46,8 @@ public class ShiftOptimizer implements IterationEndsListener {
 	public double acceptedIndividualCost = Double.POSITIVE_INFINITY;
 	public double estimatedCost = 0;
 	public Regression regression = null;
-	public double[] predictedRejectionRate;
-	Map<Double, Double> estimatedRejectionRate = null;
+
+	Map<Double, Double> estimatedRejectionRate = new LinkedHashMap<>();
 
 	@Inject
 	public ShiftOptimizer(Scenario scenario, RejectionTracker rejectionTracker) {
@@ -60,7 +60,9 @@ public class ShiftOptimizer implements IterationEndsListener {
 		initializeSubmittedRequestsCSV();
 		initializeActiveShiftsPerHourCSV();
 		initializeRejectedRatePerHourCSV();
+		initializeEstimatedRejectedRatePerHourCSV();
 	}
+
 
 	@Override
 	public void notifyIterationEnds(IterationEndsEvent iterationEndsEvent) {
@@ -91,23 +93,24 @@ public class ShiftOptimizer implements IterationEndsListener {
 			log.info("Number of shifts for accepted solution: " + acceptedSolution.getShifts().size());
 			log.info("Temperature: " + temp);
 
-			if (iterationEndsEvent.getIteration() >= 10){
+			if (iterationEndsEvent.getIteration() == 50) {
 				try {
 					regression = new Regression(SHIFT_TYPE, CONFIGURATION);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
+			}
 				if (regression != null) {
 					double[] activeShifts = Arrays.stream(activeShiftsPerHour(currentIndividual).values().toArray()).mapToDouble(value -> Double.parseDouble(value.toString())).toArray();
 					double[] submittedRequests = Arrays.stream(submitted.values().toArray()).mapToDouble(value -> Double.parseDouble(value.toString())).toArray();
-					predictedRejectionRate = regression.predictedRejectionRate(activeShifts, submittedRequests);
-					for (int i = 0; i < predictedRejectionRate.length; i++)
-						estimatedRejectionRate.put((double) i, predictedRejectionRate[i]);
+					double[] estimatedRejectionRateArray;;
+					estimatedRejectionRateArray = regression.estimateRejectionRateArray(activeShifts, submittedRequests);
+					for (int i = 0; i < estimatedRejectionRateArray.length; i++)
+						estimatedRejectionRate.put((double) i, estimatedRejectionRateArray[i]);
 					estimatedCost = getCostOfSolution(currentIndividual, estimatedRejectionRate);
 				}
-			}
 			writeCurrentSolutionOutput(iterationEndsEvent.getIteration(), rejectionRate, rejections, submitted, currentIndividual);
-
+			writeEstimatedRejectionRatePerHourCSV(iterationEndsEvent.getIteration(), estimatedRejectionRate);
 			double acceptanceProbability = acceptanceProbability(acceptedIndividualCost, currentIndividualCost, temp);
 
 			log.info(String.format("The acceptance probability: %f", acceptanceProbability));
@@ -142,6 +145,35 @@ public class ShiftOptimizer implements IterationEndsListener {
 
 		Perturbation.setIteration(iterationEndsEvent.getIteration());
 	}
+
+	private void writeEstimatedRejectionRatePerHourCSV(int iteration, Map<Double, Double> estimatedRejectionRate) {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/%s/config%s/estimated_rejected_rate_per_hour.csv", SHIFT_TYPE, CONFIGURATION), true);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add(String.valueOf(iteration))
+					.add(joinMapValues(estimatedRejectionRate, ","));
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 	private void writeCurrentSolutionOutput(int iteration, Map<Double, Double> rejectionRates, Map<Double, Double> rejections, Map<Double, Double> submitted, Individual currentIndividual) {
 		FileWriter csvwriter;
@@ -408,6 +440,37 @@ public class ShiftOptimizer implements IterationEndsListener {
 		BufferedWriter bufferedWriter = null;
 		try {
 			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/%s/config%s/rejected_rate_per_hour.csv", SHIFT_TYPE, CONFIGURATION), false);
+			bufferedWriter = new BufferedWriter(csvwriter);
+			StringBuilder stringBuilder = new StringBuilder();
+			for (int i = 0; i < END_SCHEDULE_TIME / 3600; i++) {
+				stringBuilder.append(i).append(",");
+			}
+			StringJoiner stringJoiner = new StringJoiner(",");
+			stringJoiner.add("iteration")
+					.add(stringBuilder);
+			bufferedWriter.write(stringJoiner.toString());
+			bufferedWriter.newLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				assert bufferedWriter != null;
+				bufferedWriter.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				bufferedWriter.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	private void initializeEstimatedRejectedRatePerHourCSV() {
+		FileWriter csvwriter;
+		BufferedWriter bufferedWriter = null;
+		try {
+			csvwriter = new FileWriter(String.format("test/output/shifts_optimization/%s/config%s/estimated_rejected_rate_per_hour.csv", SHIFT_TYPE, CONFIGURATION), false);
 			bufferedWriter = new BufferedWriter(csvwriter);
 			StringBuilder stringBuilder = new StringBuilder();
 			for (int i = 0; i < END_SCHEDULE_TIME / 3600; i++) {

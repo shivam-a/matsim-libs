@@ -25,8 +25,8 @@ public class SimulatedAnnealing{
 		Scanner rejectedRates;
 		String[] initialShiftSize = {"5_shifts", "30_shifts", "60_shifts"};
 		initializeRegressionResultCSV();
-		for (int configuration = 1; configuration < 19; configuration++) {
-			for (String size : initialShiftSize) {
+		for (String size : initialShiftSize) {
+			for (int configuration = 1; configuration < 19; configuration++) {
 				x1.clear();
 				x2.clear();
 				y.clear();
