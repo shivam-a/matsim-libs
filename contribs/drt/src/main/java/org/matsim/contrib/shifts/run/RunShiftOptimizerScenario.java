@@ -36,7 +36,11 @@ public class RunShiftOptimizerScenario {
 	private static final boolean rebalancing = false;
 	public static final Map<String, String> configMap = new LinkedHashMap<>();
 	public static void main(String[] args) {
+		int configNumber = 1;
+		runSimulation (configNumber);
+	}
 
+	private static void runSimulation(int configNumber) {
 		MultiModeDrtConfigGroup multiModeDrtConfigGroup = new MultiModeDrtConfigGroup();
 
 		/*
@@ -49,7 +53,7 @@ public class RunShiftOptimizerScenario {
 		List<String> keys = new LinkedList<>();
 		List<String> values = new LinkedList<>();
 		try {
-			Scanner scanner = new Scanner(new FileReader("test/output/shifts_optimization/configurations.csv"));
+			Scanner scanner = new Scanner(new FileReader("test/output/shifts_optimization/configurationsTestRegression.csv"));
 			String[] columns = scanner.nextLine().split("\t");
 			String[] columnsSplit = columns[0].split(",");
 			keys.addAll(Arrays.asList(columnsSplit));
@@ -58,7 +62,7 @@ public class RunShiftOptimizerScenario {
 			20-38 5_shifts
 			39-57 60_shifts
 			 */
-			int configNumber = 39;
+//			int configNumber = 2;
 			for (int i = 1; i < configNumber; i++) {
 				scanner.nextLine();
 			}

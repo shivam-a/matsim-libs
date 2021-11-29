@@ -10,6 +10,7 @@ import org.matsim.core.controler.events.IterationEndsEvent;
 import org.matsim.core.controler.listener.IterationEndsListener;
 
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -34,34 +35,39 @@ public class ShiftOptimizer implements IterationEndsListener {
 	public final double DESIRED_REJECTION_RATE = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("DESIRED_REJECTION_RATE"));
 	public final double PENALTY = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("PENALTY"));
 	public Random random = new Random();
-  public final String COOLING_SCHEDULE = RunShiftOptimizerScenario.configMap.get("coolingSchedule");
+	public final String COOLING_SCHEDULE = RunShiftOptimizerScenario.configMap.get("coolingSchedule");
 	public String PERTURBATION_TYPE = RunShiftOptimizerScenario.configMap.get("perturbationType");
 	private final RejectionTracker rejectionTracker;
-  private final DrtShifts initialSolution;
-  private DrtShifts currentSolution;
-  private DrtShifts acceptedSolution;
+	private final DrtShifts initialSolution;
+	private DrtShifts currentSolution;
+	private DrtShifts acceptedSolution;
 	private double temp;
 	public double currentIndividualCost = Double.POSITIVE_INFINITY;
-  public double acceptedIndividualCost = Double.POSITIVE_INFINITY;
+	public double acceptedIndividualCost = Double.POSITIVE_INFINITY;
+	public double estimatedCost = 0;
+	public Regression regression = null;
+	public double[] predictedRejectionRate;
+	Map<Double, Double> estimatedRejectionRate = null;
 
 	@Inject
-  public ShiftOptimizer(Scenario scenario, RejectionTracker rejectionTracker) {
-    this.initialSolution = DrtShiftUtils.getOrCreateShifts(scenario);
-    this.currentSolution = initialSolution;
-    this.acceptedSolution = currentSolution;
-    this.rejectionTracker = rejectionTracker;
+	public ShiftOptimizer(Scenario scenario, RejectionTracker rejectionTracker) {
+		this.initialSolution = DrtShiftUtils.getOrCreateShifts(scenario);
+		this.currentSolution = initialSolution;
+		this.acceptedSolution = currentSolution;
+		this.rejectionTracker = rejectionTracker;
 		initializeCurrentSolutionCSV();
 		initializeAcceptedSolutionCSV();
 		initializeSubmittedRequestsCSV();
 		initializeActiveShiftsPerHourCSV();
 		initializeRejectedRatePerHourCSV();
-  }
+	}
 
-  @Override
-  public void notifyIterationEnds(IterationEndsEvent iterationEndsEvent) {
-    Map<Double, Double> rejectionRate = rejectionTracker.getRejectionRatePerTimeBin();
+	@Override
+	public void notifyIterationEnds(IterationEndsEvent iterationEndsEvent) {
+		Map<Double, Double> rejectionRate = rejectionTracker.getRejectionRatePerTimeBin();
 		Map<Double, Double> rejections = rejectionTracker.getRejectionsPerTimeBin();
 		Map<Double, Double> submitted = rejectionTracker.getSubmittedPerTimeBin();
+
 		log.info("Number of submitted requests: " + getSumOfValues(submitted));
 		log.info("Number of rejected requests: " + getSumOfValues(rejections));
 		log.info("Average rejection rate: " + (getSumOfValues(rejectionRate) / rejectionRate.size()));
@@ -69,12 +75,13 @@ public class ShiftOptimizer implements IterationEndsListener {
 		assert maximumRejectionRateAndTime != null;
 		log.info("Maximum rejection rate at " + maximumRejectionRateAndTime.getKey() + " : " + maximumRejectionRateAndTime.getValue());
 		//optimization
-    temp = coolingTemperature(iterationEndsEvent.getIteration());
-    Individual currentIndividual = getIndividualFromDrtShifts(currentSolution, rejectionRate);
-    Individual acceptedIndividual = getIndividualFromDrtShifts(acceptedSolution, rejectionRate);
-    if (initialSolution == null)
-      log.warn("initial solution is null");
-    else {
+		temp = coolingTemperature(iterationEndsEvent.getIteration());
+		Individual currentIndividual = getIndividualFromDrtShifts(currentSolution, rejectionRate);
+		Individual acceptedIndividual = getIndividualFromDrtShifts(acceptedSolution, rejectionRate);
+
+		if (initialSolution == null)
+			log.warn("initial solution is null");
+		else {
 			currentIndividualCost = getCostOfSolution(currentIndividual, rejections);
 			log.info(String.format("The current Shift Solution Cost for iteration %d: %f",
 					iterationEndsEvent.getIteration(), currentIndividualCost));
@@ -84,6 +91,21 @@ public class ShiftOptimizer implements IterationEndsListener {
 			log.info("Number of shifts for accepted solution: " + acceptedSolution.getShifts().size());
 			log.info("Temperature: " + temp);
 
+			if (iterationEndsEvent.getIteration() >= 10){
+				try {
+					regression = new Regression(SHIFT_TYPE, CONFIGURATION);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+				if (regression != null) {
+					double[] activeShifts = Arrays.stream(activeShiftsPerHour(currentIndividual).values().toArray()).mapToDouble(value -> Double.parseDouble(value.toString())).toArray();
+					double[] submittedRequests = Arrays.stream(submitted.values().toArray()).mapToDouble(value -> Double.parseDouble(value.toString())).toArray();
+					predictedRejectionRate = regression.predictedRejectionRate(activeShifts, submittedRequests);
+					for (int i = 0; i < predictedRejectionRate.length; i++)
+						estimatedRejectionRate.put((double) i, predictedRejectionRate[i]);
+					estimatedCost = getCostOfSolution(currentIndividual, estimatedRejectionRate);
+				}
+			}
 			writeCurrentSolutionOutput(iterationEndsEvent.getIteration(), rejectionRate, rejections, submitted, currentIndividual);
 
 			double acceptanceProbability = acceptanceProbability(acceptedIndividualCost, currentIndividualCost, temp);
@@ -112,13 +134,13 @@ public class ShiftOptimizer implements IterationEndsListener {
 			}
 
 			currentSolution = getDrtShiftsFromIndividual(currentIndividual);
-    }
+		}
 
-    getIndividualFromDrtShifts(acceptedSolution, rejectionRate).getShifts().forEach(shift -> log.info(joinMapValues(shift.getEncodedShift(), "")));
+		getIndividualFromDrtShifts(acceptedSolution, rejectionRate).getShifts().forEach(shift -> log.info(joinMapValues(shift.getEncodedShift(), "")));
 
-    Perturbation.notifyIterationEnds();
+		Perturbation.notifyIterationEnds();
 
-    Perturbation.setIteration(iterationEndsEvent.getIteration());
+		Perturbation.setIteration(iterationEndsEvent.getIteration());
 	}
 
 	private void writeCurrentSolutionOutput(int iteration, Map<Double, Double> rejectionRates, Map<Double, Double> rejections, Map<Double, Double> submitted, Individual currentIndividual) {
@@ -138,6 +160,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 					.add(String.valueOf(maximumRejectionRateAndTime.getValue()))
 					.add(String.valueOf(totalDriverHours(currentIndividual)))
 					.add(String.valueOf(currentIndividualCost))
+					.add(String.valueOf(estimatedCost))
 					.add(String.valueOf(temp));
 			bufferedWriter.write(stringJoiner.toString());
 			bufferedWriter.newLine();
@@ -292,6 +315,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 					.add("current_max_rejection_rate")
 					.add("current_driver_hours")
 					.add("current_cost")
+					.add("estimated_current_cost")
 					.add("temperature");
 			bufferedWriter.write(stringJoiner.toString());
 			bufferedWriter.newLine();
@@ -444,43 +468,43 @@ public class ShiftOptimizer implements IterationEndsListener {
 	}
 
 	public Individual getIndividualFromDrtShifts(DrtShifts drtShifts, Map<Double, Double> rejectionRate) {
-    Individual solution = new Individual();
-    List<SAShift> saShiftList = new LinkedList<>();
-    SABreak saBreak;
-    for (var shift: drtShifts.getShifts().values()) {
-      if (shift.getBreak() != null)
-        saBreak = new SABreak(shift.getBreak().getEarliestBreakStartTime(), shift.getBreak().getLatestBreakEndTime(), shift.getBreak().getDuration());
-      else throw new NullPointerException("Drt Shift Break is null");
-      SAShift saShift = new SAShift(shift.getId(), shift.getStartTime(), shift.getEndTime());
-      saShift.setSABreak(saBreak);
-      saShift.encodeShiftV2();
-      saShiftList.add(saShift);
-    }
-    solution.setShifts(saShiftList);
-    solution.setRejectionRate(rejectionRate);
-    return solution;
-  }
+		Individual solution = new Individual();
+		List<SAShift> saShiftList = new LinkedList<>();
+		SABreak saBreak;
+		for (var shift: drtShifts.getShifts().values()) {
+			if (shift.getBreak() != null)
+				saBreak = new SABreak(shift.getBreak().getEarliestBreakStartTime(), shift.getBreak().getLatestBreakEndTime(), shift.getBreak().getDuration());
+			else throw new NullPointerException("Drt Shift Break is null");
+			SAShift saShift = new SAShift(shift.getId(), shift.getStartTime(), shift.getEndTime());
+			saShift.setSABreak(saBreak);
+			saShift.encodeShiftV2();
+			saShiftList.add(saShift);
+		}
+		solution.setShifts(saShiftList);
+		solution.setRejectionRate(rejectionRate);
+		return solution;
+	}
 
-  public DrtShifts getDrtShiftsFromIndividual(Individual individual) {
-    DrtShifts solution = new DrtShiftsImpl();
-    DefautShiftBreakImpl shiftBreak;
-    for (var shift: individual.getShifts()) {
-      SAShift decodedSAShift = shift.decodeShiftV2();
-      DrtShift drtShift = new DrtShiftImpl(decodedSAShift.getId());
-      if (decodedSAShift.getSABreak() != null)
-        shiftBreak = new DefautShiftBreakImpl(decodedSAShift.getSABreak().getEarliestStart(), decodedSAShift.getSABreak().getLatestEnd(), decodedSAShift.getSABreak().getDuration());
-      else throw new NullPointerException("SimulatedAnnealing Shift Break is null");
-      drtShift.setBreak(shiftBreak);
-      drtShift.setStartTime(decodedSAShift.getStartTime());
-      drtShift.setEndTime(decodedSAShift.getEndTime());
-      solution.addShift(drtShift);
-    }
-    return solution;
-  }
+	public DrtShifts getDrtShiftsFromIndividual(Individual individual) {
+		DrtShifts solution = new DrtShiftsImpl();
+		DefautShiftBreakImpl shiftBreak;
+		for (var shift: individual.getShifts()) {
+			SAShift decodedSAShift = shift.decodeShiftV2();
+			DrtShift drtShift = new DrtShiftImpl(decodedSAShift.getId());
+			if (decodedSAShift.getSABreak() != null)
+				shiftBreak = new DefautShiftBreakImpl(decodedSAShift.getSABreak().getEarliestStart(), decodedSAShift.getSABreak().getLatestEnd(), decodedSAShift.getSABreak().getDuration());
+			else throw new NullPointerException("SimulatedAnnealing Shift Break is null");
+			drtShift.setBreak(shiftBreak);
+			drtShift.setStartTime(decodedSAShift.getStartTime());
+			drtShift.setEndTime(decodedSAShift.getEndTime());
+			solution.addShift(drtShift);
+		}
+		return solution;
+	}
 
-  public DrtShifts getCurrentSolution() {
-    return currentSolution;
-  }
+	public DrtShifts getCurrentSolution() {
+		return currentSolution;
+	}
 
 	public double coolingTemperature(int iteration) {
 		if (COOLING_SCHEDULE.equalsIgnoreCase("LINEAR")) {
@@ -629,7 +653,7 @@ public class ShiftOptimizer implements IterationEndsListener {
 	}
 
 	public void initializeEncodingPerHour(Map<Double, Double> encodedShift) {
-		for (double i = START_SCHEDULE_TIME; i < END_SCHEDULE_TIME; i += TIME_INTERVAL) {
+		for (double i = START_SCHEDULE_TIME; i < END_SCHEDULE_TIME; i += 3600) {
 			encodedShift.put(i / 3600, 0.0);
 		}
 	}

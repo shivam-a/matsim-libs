@@ -14,7 +14,9 @@ public class SAShift {
 	public double END_SCHEDULE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME"));
 	public double START_SCHEDULE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME"));
 	public double TIME_INTERVAL = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
-
+//	double START_SCHEDULE_TIME = 0;
+//	double END_SCHEDULE_TIME = 30 * 60 * 60;
+//	double TIME_INTERVAL = 1800;
 	private SABreak saBreak;
 	private Map<Double, Double> encodedShift;
 	private Id<DrtShift> id;
@@ -116,9 +118,6 @@ public class SAShift {
 	 */
 
 	public void initializeEncodingPerTimeInterval(Map<Double, Double> encodedShift) {
-//		double START_SCHEDULE_TIME = 0;
-//		double END_SCHEDULE_TIME = 30 * 60 * 60;
-//		double TIME_INTERVAL = 1800;
 		for (double i = START_SCHEDULE_TIME; i < END_SCHEDULE_TIME; i += TIME_INTERVAL) {
 			encodedShift.put(i, 0.0);
 		}
