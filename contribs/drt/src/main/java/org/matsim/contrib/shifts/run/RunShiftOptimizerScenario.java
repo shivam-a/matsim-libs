@@ -36,6 +36,11 @@ public class RunShiftOptimizerScenario {
 	private static final boolean rebalancing = false;
 	public static final Map<String, String> configMap = new LinkedHashMap<>();
 	public static void main(String[] args) {
+		/*
+		1-19 30_shifts
+		20-38 5_shifts
+		39-57 60_shifts
+		*/
 		int configNumber = 1;
 		runSimulation (configNumber);
 	}
@@ -53,15 +58,11 @@ public class RunShiftOptimizerScenario {
 		List<String> keys = new LinkedList<>();
 		List<String> values = new LinkedList<>();
 		try {
-			Scanner scanner = new Scanner(new FileReader("test/output/shifts_optimization/configurationsTestRegression.csv"));
+			Scanner scanner = new Scanner(new FileReader("test/output/shifts_optimization/configurations5_shifts.csv"));
 			String[] columns = scanner.nextLine().split("\t");
 			String[] columnsSplit = columns[0].split(",");
 			keys.addAll(Arrays.asList(columnsSplit));
-			/*
-			1-19 30_shifts
-			20-38 5_shifts
-			39-57 60_shifts
-			 */
+
 //			int configNumber = 2;
 			for (int i = 1; i < configNumber; i++) {
 				scanner.nextLine();
@@ -165,7 +166,7 @@ public class RunShiftOptimizerScenario {
 		config.controler().setWriteEventsInterval(1);
 
 		config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setOutputDirectory("test/output/holzkirchen_shifts");
+		config.controler().setOutputDirectory("test/output/holzkirchen_shifts30_shifts");
 
 		ShiftDrtConfigGroup shiftDrtConfigGroup = ConfigUtils.addOrGetModule(config, ShiftDrtConfigGroup.class);
 		shiftDrtConfigGroup.setOperationFacilityInputFile(opFacilities.getPath());

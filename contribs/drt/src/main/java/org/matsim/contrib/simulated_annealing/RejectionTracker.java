@@ -53,7 +53,7 @@ public class RejectionTracker implements PassengerRequestRejectedEventHandler, D
                 rejectionRate = 0;
             else rejectionRate = rejectedCounter / submittedCounter;
 			double bin;
-            if (mobsimBeforeSimStepEvent.getSimulationTime() < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME"))) {
+            if (mobsimBeforeSimStepEvent.getSimulationTime() < Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SERVICE_TIME"))) {
 				bin = mobsimBeforeSimStepEvent.getSimulationTime() / timeBinSize;
 				rejectionRatePerTimeBin.put(bin, rejectionRate);
 				rejectionsPerTimeBin.put(bin, rejectedCounter);

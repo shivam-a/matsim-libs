@@ -18,8 +18,8 @@ public class Perturbation {
 	public static final double SHIFTS_INSERTION = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_INSERTION"));
 	public static final double SHIFTS_MINIMUM = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_MINIMUM"));
 	public static final double SHIFTS_REMOVAL = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFTS_REMOVAL"));
-	public static final double END_SCHEDULE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SCHEDULE_TIME"));
-	public static final double START_SCHEDULE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SCHEDULE_TIME"));
+	public static final double END_SERVICE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("END_SERVICE_TIME"));
+	public static final double START_SERVICE_TIME = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("START_SERVICE_TIME"));
 	public static final double TIME_INTERVAL = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("TIME_INTERVAL"));
 	public static final double SHIFT_TIMINGS_BUFFER = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_BUFFER"));
 	public static final double SHIFT_TIMINGS_MAXIMUM_LENGTH = Double.parseDouble(RunShiftOptimizerScenario.configMap.get("SHIFT_TIMINGS_MAXIMUM_LENGTH"));
@@ -104,7 +104,7 @@ public class Perturbation {
 		double newEnd = shift.getEndTime();
 		double newEarliestStart = shift.getSABreak().getEarliestStart();
 		double newLatestEnd = shift.getSABreak().getLatestEnd();
-		double movableDistanceSize = (END_SCHEDULE_TIME - START_SCHEDULE_TIME + TIME_INTERVAL) - (newEnd - newStart) - (2 * SHIFT_TIMINGS_BUFFER);
+		double movableDistanceSize = (END_SERVICE_TIME - START_SERVICE_TIME + TIME_INTERVAL) - (newEnd - newStart) - (2 * SHIFT_TIMINGS_BUFFER);
 		if ((movableDistanceSize / TIME_INTERVAL) > 1) {
 			moveAhead = random.nextInt((int) (movableDistanceSize / TIME_INTERVAL) - 1);
 			newStart = moveAhead * TIME_INTERVAL + SHIFT_TIMINGS_BUFFER;
@@ -161,8 +161,8 @@ public class Perturbation {
 
 	private static void increaseSAShiftTimings(SAShift shift) {
 		// difference between the end of schedule and end of shift
-		double additionalEndDistanceSize = END_SCHEDULE_TIME - SHIFT_TIMINGS_BUFFER - shift.getEndTime() ;
-		double additionalStartDistanceSize = shift.getStartTime() - START_SCHEDULE_TIME + SHIFT_TIMINGS_BUFFER;
+		double additionalEndDistanceSize = END_SERVICE_TIME - SHIFT_TIMINGS_BUFFER - shift.getEndTime() ;
+		double additionalStartDistanceSize = shift.getStartTime() - START_SERVICE_TIME + SHIFT_TIMINGS_BUFFER;
 		// find any value in between the movableDistanceSize and increment all values
 		double newStart = shift.getStartTime();
 		double newEnd = shift.getEndTime();

@@ -1,7 +1,6 @@
 package org.matsim.contrib.simulated_annealing;
 
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
-import org.matsim.contrib.shifts.run.RunShiftOptimizerScenario;
 
 import java.io.*;
 import java.util.*;
