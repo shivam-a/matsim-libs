@@ -41,7 +41,7 @@ public class RunShiftOptimizerScenario {
 		20-38 5_shifts
 		39-57 60_shifts
 		*/
-		int configNumber = 1;
+		int configNumber = 13;
 		runSimulation (configNumber);
 	}
 

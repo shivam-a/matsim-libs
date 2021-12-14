@@ -48,6 +48,8 @@ public class Perturbation {
 			// perturb the single shift that you get
 
 			SAShift saShift = shift.deepCopy();
+			moveSAShiftTimings(saShift);
+			moveSABreakCorridor(saShift);
 			saShift.setId(Id.create( shift.getId() + "_i" + iteration + "_c" + counter, DrtShift.class));
 			saShift.encodeShiftV2();
 			counter++;
